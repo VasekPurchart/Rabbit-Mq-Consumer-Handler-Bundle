@@ -1,0 +1,12 @@
+{
+	"name": "vasek-purchart/rabbit-mq-consumer-handler-bundle",
+	"description": "Handle messages in RabbitMQ consumers in a safe and effective way",
+	"license": "MIT",
+	"authors": [
+		{
+			"name": "Vašek Purchart",
+			"email": "me@vasekpurchart.cz",
+			"homepage": "http://vasekpurchart.cz"
+		}
+	]
+}
