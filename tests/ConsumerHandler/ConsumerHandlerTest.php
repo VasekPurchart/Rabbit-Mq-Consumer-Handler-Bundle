@@ -4,6 +4,7 @@ declare(strict_types = 1);
 
 namespace VasekPurchart\RabbitMqConsumerHandlerBundle\ConsumerHandler;
 
+use Doctrine\ORM\EntityManager;
 use OldSound\RabbitMqBundle\RabbitMq\ConsumerInterface;
 use OldSound\RabbitMqBundle\RabbitMq\DequeuerInterface;
 use Psr\Log\LoggerInterface;
@@ -50,6 +51,8 @@ class ConsumerHandlerTest extends \PHPUnit\Framework\TestCase
 			->expects($this->once())
 			->method('forceStopConsumer');
 
+		$entityManager = $this->getOpenEntityManagerMock();
+
 		$logger = $this->getLoggerMock();
 		$logger
 			->expects($this->once())
@@ -71,6 +74,7 @@ class ConsumerHandlerTest extends \PHPUnit\Framework\TestCase
 			$stopConsumerSleepSeconds,
 			$dequeuer,
 			$logger,
+			$entityManager,
 			$sleeper
 		);
 
@@ -94,6 +98,81 @@ class ConsumerHandlerTest extends \PHPUnit\Framework\TestCase
 		);
 	}
 
+	public function testStopConsumerWhenEntityManagerClosesForSuccessScenario(): void
+	{
+		$stopConsumerSleepSeconds = 2;
+
+		$dequeuer = $this->getDequeuerMock();
+		$dequeuer
+			->expects($this->once())
+			->method('forceStopConsumer');
+
+		$logger = $this->getLoggerMock();
+		$logger
+			->expects($this->never())
+			->method($this->anything());
+
+		$entityManager = $this->getEntityManagerMock();
+		$entityManager
+			->expects($this->any())
+			->method('isOpen')
+			->will($this->returnValue(false));
+
+		$sleeper = $this->getSleeperMock();
+		$sleeper
+			->expects($this->once())
+			->method('sleep')
+			->with($this->equalTo($stopConsumerSleepSeconds));
+
+		$consumerHandler = new ConsumerHandler(
+			$stopConsumerSleepSeconds,
+			$dequeuer,
+			$logger,
+			$entityManager,
+			$sleeper
+		);
+
+		$consumerHandler->processMessage(function (): int {
+			return ConsumerInterface::MSG_ACK;
+		});
+	}
+
+	public function testStopConsumerWhenEntityManagerClosesForUnhandledException(): void
+	{
+		$stopConsumerSleepSeconds = 2;
+
+		$dequeuer = $this->getDequeuerMock();
+		$dequeuer
+			->expects($this->once())
+			->method('forceStopConsumer');
+
+		$logger = $this->getLoggerMock();
+
+		$entityManager = $this->getEntityManagerMock();
+		$entityManager
+			->expects($this->any())
+			->method('isOpen')
+			->will($this->returnValue(false));
+
+		$sleeper = $this->getSleeperMock();
+		$sleeper
+			->expects($this->once())
+			->method('sleep')
+			->with($this->equalTo($stopConsumerSleepSeconds));
+
+		$consumerHandler = new ConsumerHandler(
+			$stopConsumerSleepSeconds,
+			$dequeuer,
+			$logger,
+			$entityManager,
+			$sleeper
+		);
+
+		$consumerHandler->processMessage(function (): int {
+			throw new \Exception('Test');
+		});
+	}
+
 	private function getConsumerHandlerForNoExpectedHandling(): ConsumerHandler
 	{
 		$stopConsumerSleepSeconds = 2;
@@ -108,6 +187,8 @@ class ConsumerHandlerTest extends \PHPUnit\Framework\TestCase
 			->expects($this->never())
 			->method($this->anything());
 
+		$entityManager = $this->getOpenEntityManagerMock();
+
 		$sleeper = $this->getSleeperMock();
 		$sleeper
 			->expects($this->never())
@@ -117,6 +198,7 @@ class ConsumerHandlerTest extends \PHPUnit\Framework\TestCase
 			$stopConsumerSleepSeconds,
 			$dequeuer,
 			$logger,
+			$entityManager,
 			$sleeper
 		);
 	}
@@ -143,6 +225,28 @@ class ConsumerHandlerTest extends \PHPUnit\Framework\TestCase
 	private function getSleeperMock()
 	{
 		return $this->createMock(Sleeper::class);
+	}
+
+	/**
+	 * @return \Doctrine\ORM\EntityManager|\PHPUnit\Framework\MockObject\MockObject
+	 */
+	private function getEntityManagerMock()
+	{
+		return $this->createMock(EntityManager::class);
+	}
+
+	/**
+	 * @return \Doctrine\ORM\EntityManager|\PHPUnit\Framework\MockObject\MockObject
+	 */
+	private function getOpenEntityManagerMock()
+	{
+		$entityManager = $this->getEntityManagerMock();
+		$entityManager
+			->expects($this->any())
+			->method('isOpen')
+			->will($this->returnValue(true));
+
+		return $entityManager;
 	}
 
 }
