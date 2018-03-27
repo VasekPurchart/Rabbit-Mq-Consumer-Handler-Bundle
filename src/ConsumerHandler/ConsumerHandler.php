@@ -7,6 +7,7 @@ namespace VasekPurchart\RabbitMqConsumerHandlerBundle\ConsumerHandler;
 use Closure;
 use OldSound\RabbitMqBundle\RabbitMq\ConsumerInterface;
 use OldSound\RabbitMqBundle\RabbitMq\DequeuerInterface;
+use Psr\Log\LoggerInterface;
 use VasekPurchart\RabbitMqConsumerHandlerBundle\Sleeper\Sleeper;
 
 class ConsumerHandler extends \Consistence\ObjectPrototype
@@ -18,17 +19,22 @@ class ConsumerHandler extends \Consistence\ObjectPrototype
 	/** @var \OldSound\RabbitMqBundle\RabbitMq\DequeuerInterface */
 	private $dequeuer;
 
+	/** @var \Psr\Log\LoggerInterface */
+	private $logger;
+
 	/** @var \VasekPurchart\RabbitMqConsumerHandlerBundle\Sleeper\Sleeper */
 	private $sleeper;
 
 	public function __construct(
 		int $stopConsumerSleepSeconds,
 		DequeuerInterface $dequeuer,
+		LoggerInterface $logger,
 		Sleeper $sleeper
 	)
 	{
 		$this->stopConsumerSleepSeconds = $stopConsumerSleepSeconds;
 		$this->dequeuer = $dequeuer;
+		$this->logger = $logger;
 		$this->sleeper = $sleeper;
 	}
 
@@ -44,6 +50,7 @@ class ConsumerHandler extends \Consistence\ObjectPrototype
 			return $processMessageCallback();
 
 		} catch (\Throwable $e) {
+			$this->logException($e);
 			$this->stopConsumer();
 
 			return ConsumerInterface::MSG_REJECT_REQUEUE;
@@ -55,6 +62,13 @@ class ConsumerHandler extends \Consistence\ObjectPrototype
 	{
 		$this->dequeuer->forceStopConsumer();
 		$this->sleeper->sleep($this->stopConsumerSleepSeconds);
+	}
+
+	public function logException(\Throwable $exception): void
+	{
+		$this->logger->error($exception->getMessage(), [
+			'exception' => $exception,
+		]);
 	}
 
 }
