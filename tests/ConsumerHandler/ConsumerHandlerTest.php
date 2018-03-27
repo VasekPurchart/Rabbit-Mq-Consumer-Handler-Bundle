@@ -6,6 +6,7 @@ namespace VasekPurchart\RabbitMqConsumerHandlerBundle\ConsumerHandler;
 
 use OldSound\RabbitMqBundle\RabbitMq\ConsumerInterface;
 use OldSound\RabbitMqBundle\RabbitMq\DequeuerInterface;
+use VasekPurchart\RabbitMqConsumerHandlerBundle\Sleeper\Sleeper;
 
 class ConsumerHandlerTest extends \PHPUnit\Framework\TestCase
 {
@@ -30,13 +31,22 @@ class ConsumerHandlerTest extends \PHPUnit\Framework\TestCase
 	 */
 	public function testProcessWithCallback(int $code): void
 	{
+		$stopConsumerSleepSeconds = 2;
+
 		$dequeuer = $this->getDequeuerMock();
 		$dequeuer
 			->expects($this->never())
 			->method($this->anything());
 
+		$sleeper = $this->getSleeperMock();
+		$sleeper
+			->expects($this->never())
+			->method($this->anything());
+
 		$consumerHandler = new ConsumerHandler(
-			$dequeuer
+			$stopConsumerSleepSeconds,
+			$dequeuer,
+			$sleeper
 		);
 
 		$this->assertSame($code, $consumerHandler->processMessage(function () use ($code): int {
@@ -46,13 +56,23 @@ class ConsumerHandlerTest extends \PHPUnit\Framework\TestCase
 
 	public function testProcessUncaughtException(): void
 	{
+		$stopConsumerSleepSeconds = 2;
+
 		$dequeuer = $this->getDequeuerMock();
 		$dequeuer
 			->expects($this->once())
 			->method('forceStopConsumer');
 
+		$sleeper = $this->getSleeperMock();
+		$sleeper
+			->expects($this->once())
+			->method('sleep')
+			->with($this->equalTo($stopConsumerSleepSeconds));
+
 		$consumerHandler = new ConsumerHandler(
-			$dequeuer
+			$stopConsumerSleepSeconds,
+			$dequeuer,
+			$sleeper
 		);
 
 		$this->assertSame(ConsumerInterface::MSG_REJECT_REQUEUE, $consumerHandler->processMessage(
@@ -68,6 +88,14 @@ class ConsumerHandlerTest extends \PHPUnit\Framework\TestCase
 	private function getDequeuerMock()
 	{
 		return $this->createMock(DequeuerInterface::class);
+	}
+
+	/**
+	 * @return \VasekPurchart\RabbitMqConsumerHandlerBundle\Sleeper\Sleeper|\PHPUnit\Framework\MockObject\MockObject
+	 */
+	private function getSleeperMock()
+	{
+		return $this->createMock(Sleeper::class);
 	}
 
 }

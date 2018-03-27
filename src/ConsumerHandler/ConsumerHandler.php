@@ -7,18 +7,29 @@ namespace VasekPurchart\RabbitMqConsumerHandlerBundle\ConsumerHandler;
 use Closure;
 use OldSound\RabbitMqBundle\RabbitMq\ConsumerInterface;
 use OldSound\RabbitMqBundle\RabbitMq\DequeuerInterface;
+use VasekPurchart\RabbitMqConsumerHandlerBundle\Sleeper\Sleeper;
 
 class ConsumerHandler extends \Consistence\ObjectPrototype
 {
 
+	/** @var int */
+	private $stopConsumerSleepSeconds;
+
 	/** @var \OldSound\RabbitMqBundle\RabbitMq\DequeuerInterface */
 	private $dequeuer;
 
+	/** @var \VasekPurchart\RabbitMqConsumerHandlerBundle\Sleeper\Sleeper */
+	private $sleeper;
+
 	public function __construct(
-		DequeuerInterface $dequeuer
+		int $stopConsumerSleepSeconds,
+		DequeuerInterface $dequeuer,
+		Sleeper $sleeper
 	)
 	{
+		$this->stopConsumerSleepSeconds = $stopConsumerSleepSeconds;
 		$this->dequeuer = $dequeuer;
+		$this->sleeper = $sleeper;
 	}
 
 	/**
@@ -33,11 +44,17 @@ class ConsumerHandler extends \Consistence\ObjectPrototype
 			return $processMessageCallback();
 
 		} catch (\Throwable $e) {
-			$this->dequeuer->forceStopConsumer();
+			$this->stopConsumer();
 
 			return ConsumerInterface::MSG_REJECT_REQUEUE;
 
 		}
+	}
+
+	public function stopConsumer(): void
+	{
+		$this->dequeuer->forceStopConsumer();
+		$this->sleeper->sleep($this->stopConsumerSleepSeconds);
 	}
 
 }
