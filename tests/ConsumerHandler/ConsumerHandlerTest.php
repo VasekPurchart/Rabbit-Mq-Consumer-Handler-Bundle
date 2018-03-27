@@ -5,6 +5,7 @@ declare(strict_types = 1);
 namespace VasekPurchart\RabbitMqConsumerHandlerBundle\ConsumerHandler;
 
 use OldSound\RabbitMqBundle\RabbitMq\ConsumerInterface;
+use OldSound\RabbitMqBundle\RabbitMq\DequeuerInterface;
 
 class ConsumerHandlerTest extends \PHPUnit\Framework\TestCase
 {
@@ -29,7 +30,14 @@ class ConsumerHandlerTest extends \PHPUnit\Framework\TestCase
 	 */
 	public function testProcessWithCallback(int $code): void
 	{
-		$consumerHandler = new ConsumerHandler();
+		$dequeuer = $this->getDequeuerMock();
+		$dequeuer
+			->expects($this->never())
+			->method($this->anything());
+
+		$consumerHandler = new ConsumerHandler(
+			$dequeuer
+		);
 
 		$this->assertSame($code, $consumerHandler->processMessage(function () use ($code): int {
 			return $code;
@@ -38,13 +46,28 @@ class ConsumerHandlerTest extends \PHPUnit\Framework\TestCase
 
 	public function testProcessUncaughtException(): void
 	{
-		$consumerHandler = new ConsumerHandler();
+		$dequeuer = $this->getDequeuerMock();
+		$dequeuer
+			->expects($this->once())
+			->method('forceStopConsumer');
+
+		$consumerHandler = new ConsumerHandler(
+			$dequeuer
+		);
 
 		$this->assertSame(ConsumerInterface::MSG_REJECT_REQUEUE, $consumerHandler->processMessage(
 			function (): int {
 				throw new \Exception();
 			}
 		));
+	}
+
+	/**
+	 * @return \OldSound\RabbitMqBundle\RabbitMq\DequeuerInterface|\PHPUnit\Framework\MockObject\MockObject
+	 */
+	private function getDequeuerMock()
+	{
+		return $this->createMock(DequeuerInterface::class);
 	}
 
 }
