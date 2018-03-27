@@ -32,29 +32,7 @@ class ConsumerHandlerTest extends \PHPUnit\Framework\TestCase
 	 */
 	public function testProcessWithCallback(int $code): void
 	{
-		$stopConsumerSleepSeconds = 2;
-
-		$dequeuer = $this->getDequeuerMock();
-		$dequeuer
-			->expects($this->never())
-			->method($this->anything());
-
-		$logger = $this->getLoggerMock();
-		$logger
-			->expects($this->never())
-			->method($this->anything());
-
-		$sleeper = $this->getSleeperMock();
-		$sleeper
-			->expects($this->never())
-			->method($this->anything());
-
-		$consumerHandler = new ConsumerHandler(
-			$stopConsumerSleepSeconds,
-			$dequeuer,
-			$logger,
-			$sleeper
-		);
+		$consumerHandler = $this->getConsumerHandlerForNoExpectedHandling();
 
 		$this->assertSame($code, $consumerHandler->processMessage(function () use ($code): int {
 			return $code;
@@ -101,6 +79,46 @@ class ConsumerHandlerTest extends \PHPUnit\Framework\TestCase
 				throw $exception;
 			}
 		));
+	}
+
+	public function testPassConsumerHandlerToCallback(): void
+	{
+		$consumerHandler = $this->getConsumerHandlerForNoExpectedHandling();
+
+		$consumerHandler->processMessage(
+			function ($consumerHandler): int {
+				$this->assertInstanceOf(ConsumerHandler::class, $consumerHandler);
+
+				return ConsumerInterface::MSG_ACK;
+			}
+		);
+	}
+
+	private function getConsumerHandlerForNoExpectedHandling(): ConsumerHandler
+	{
+		$stopConsumerSleepSeconds = 2;
+
+		$dequeuer = $this->getDequeuerMock();
+		$dequeuer
+			->expects($this->never())
+			->method($this->anything());
+
+		$logger = $this->getLoggerMock();
+		$logger
+			->expects($this->never())
+			->method($this->anything());
+
+		$sleeper = $this->getSleeperMock();
+		$sleeper
+			->expects($this->never())
+			->method($this->anything());
+
+		return new ConsumerHandler(
+			$stopConsumerSleepSeconds,
+			$dequeuer,
+			$logger,
+			$sleeper
+		);
 	}
 
 	/**

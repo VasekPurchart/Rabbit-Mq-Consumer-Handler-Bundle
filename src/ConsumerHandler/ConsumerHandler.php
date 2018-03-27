@@ -47,7 +47,7 @@ class ConsumerHandler extends \Consistence\ObjectPrototype
 	): int
 	{
 		try {
-			return $processMessageCallback();
+			return $processMessageCallback($this);
 
 		} catch (\Throwable $e) {
 			$this->logException($e);
