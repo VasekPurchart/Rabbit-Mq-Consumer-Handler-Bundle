@@ -188,6 +188,9 @@ class ConsumerHandlerTest extends \PHPUnit\Framework\TestCase
 			->method($this->anything());
 
 		$entityManager = $this->getOpenEntityManagerMock();
+		$entityManager
+			->expects($this->once())
+			->method('clear');
 
 		$sleeper = $this->getSleeperMock();
 		$sleeper

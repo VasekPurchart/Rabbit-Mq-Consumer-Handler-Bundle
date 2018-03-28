@@ -57,6 +57,8 @@ class ConsumerHandler extends \Consistence\ObjectPrototype
 	): int
 	{
 		try {
+			$this->entityManager->clear();
+
 			return $processMessageCallback($this);
 
 		} catch (\Throwable $e) {
