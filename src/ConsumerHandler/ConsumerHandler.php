@@ -5,6 +5,7 @@ declare(strict_types = 1);
 namespace VasekPurchart\RabbitMqConsumerHandlerBundle\ConsumerHandler;
 
 use Closure;
+use Doctrine\ORM\EntityManager;
 use OldSound\RabbitMqBundle\RabbitMq\ConsumerInterface;
 use OldSound\RabbitMqBundle\RabbitMq\DequeuerInterface;
 use Psr\Log\LoggerInterface;
@@ -22,20 +23,29 @@ class ConsumerHandler extends \Consistence\ObjectPrototype
 	/** @var \Psr\Log\LoggerInterface */
 	private $logger;
 
+	/** @var \Doctrine\ORM\EntityManager */
+	private $entityManager;
+
 	/** @var \VasekPurchart\RabbitMqConsumerHandlerBundle\Sleeper\Sleeper */
 	private $sleeper;
+
+	/** @var bool */
+	private $stopAlreadyRequested;
 
 	public function __construct(
 		int $stopConsumerSleepSeconds,
 		DequeuerInterface $dequeuer,
 		LoggerInterface $logger,
+		EntityManager $entityManager,
 		Sleeper $sleeper
 	)
 	{
 		$this->stopConsumerSleepSeconds = $stopConsumerSleepSeconds;
 		$this->dequeuer = $dequeuer;
 		$this->logger = $logger;
+		$this->entityManager = $entityManager;
 		$this->sleeper = $sleeper;
+		$this->stopAlreadyRequested = false;
 	}
 
 	/**
@@ -47,6 +57,8 @@ class ConsumerHandler extends \Consistence\ObjectPrototype
 	): int
 	{
 		try {
+			$this->entityManager->clear();
+
 			return $processMessageCallback($this);
 
 		} catch (\Throwable $e) {
@@ -55,12 +67,21 @@ class ConsumerHandler extends \Consistence\ObjectPrototype
 
 			return ConsumerInterface::MSG_REJECT_REQUEUE;
 
+		} finally {
+			if (!$this->entityManager->isOpen()) {
+				$this->stopConsumer();
+			}
 		}
 	}
 
 	public function stopConsumer(): void
 	{
+		if ($this->stopAlreadyRequested) {
+			return;
+		}
+
 		$this->dequeuer->forceStopConsumer();
+		$this->stopAlreadyRequested = true;
 		$this->sleeper->sleep($this->stopConsumerSleepSeconds);
 	}
 
