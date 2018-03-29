@@ -8,6 +8,7 @@ use Closure;
 use Doctrine\ORM\EntityManager;
 use OldSound\RabbitMqBundle\RabbitMq\ConsumerInterface;
 use OldSound\RabbitMqBundle\RabbitMq\DequeuerInterface;
+use Psr\Log\LogLevel;
 use Psr\Log\LoggerInterface;
 use VasekPurchart\RabbitMqConsumerHandlerBundle\Sleeper\Sleeper;
 
@@ -63,26 +64,37 @@ class ConsumerHandler extends \Consistence\ObjectPrototype
 
 		} catch (\Throwable $e) {
 			$this->logException($e);
-			$this->stopConsumer();
+			$this->stopConsumer('uncaught exception');
 
 			return ConsumerInterface::MSG_REJECT_REQUEUE;
 
 		} finally {
 			if (!$this->entityManager->isOpen()) {
-				$this->stopConsumer();
+				$this->stopConsumer('EntityManager was closed');
 			}
 		}
 	}
 
-	public function stopConsumer(): void
+	public function stopConsumer(string $reason): void
 	{
 		if ($this->stopAlreadyRequested) {
 			return;
 		}
 
+		$this->log(LogLevel::WARNING, 'Consumer will be stopped, reason: ' . $reason);
 		$this->dequeuer->forceStopConsumer();
 		$this->stopAlreadyRequested = true;
 		$this->sleeper->sleep($this->stopConsumerSleepSeconds);
+	}
+
+	/**
+	 * @param mixed $level
+	 * @param string $message
+	 * @param mixed[] $context
+	 */
+	public function log($level, string $message, array $context = []): void
+	{
+		$this->logger->log($level, $message, $context);
 	}
 
 	public function logException(\Throwable $exception): void

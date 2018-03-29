@@ -7,6 +7,7 @@ namespace VasekPurchart\RabbitMqConsumerHandlerBundle\ConsumerHandler;
 use Doctrine\ORM\EntityManager;
 use OldSound\RabbitMqBundle\RabbitMq\ConsumerInterface;
 use OldSound\RabbitMqBundle\RabbitMq\DequeuerInterface;
+use Psr\Log\LogLevel;
 use Psr\Log\LoggerInterface;
 use VasekPurchart\RabbitMqConsumerHandlerBundle\Sleeper\Sleeper;
 
@@ -63,6 +64,10 @@ class ConsumerHandlerTest extends \PHPUnit\Framework\TestCase
 					'exception' => $exception,
 				])
 			);
+		$logger
+			->expects($this->once())
+			->method('log')
+			->with(LogLevel::WARNING, $this->stringContains('uncaught exception'));
 
 		$sleeper = $this->getSleeperMock();
 		$sleeper
@@ -109,8 +114,9 @@ class ConsumerHandlerTest extends \PHPUnit\Framework\TestCase
 
 		$logger = $this->getLoggerMock();
 		$logger
-			->expects($this->never())
-			->method($this->anything());
+			->expects($this->once())
+			->method('log')
+			->with(LogLevel::WARNING, $this->stringContains('EntityManager was closed'));
 
 		$entityManager = $this->getEntityManagerMock();
 		$entityManager
@@ -147,6 +153,13 @@ class ConsumerHandlerTest extends \PHPUnit\Framework\TestCase
 			->method('forceStopConsumer');
 
 		$logger = $this->getLoggerMock();
+		$logger
+			->expects($this->once())
+			->method('log')
+			->with(LogLevel::WARNING, $this->stringContains('uncaught exception'));
+		$logger
+			->expects($this->any())
+			->method('error');
 
 		$entityManager = $this->getEntityManagerMock();
 		$entityManager
