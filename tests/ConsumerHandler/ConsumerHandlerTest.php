@@ -219,6 +219,36 @@ class ConsumerHandlerTest extends \PHPUnit\Framework\TestCase
 		);
 	}
 
+	public function testDoNotSleepWhenSleepingIsDisabled(): void
+	{
+		$stopConsumerSleepSeconds = 0;
+
+		$dequeuer = $this->getDequeuerMock();
+
+		$entityManager = $this->getOpenEntityManagerMock();
+
+		$logger = $this->getLoggerMock();
+
+		$sleeper = $this->getSleeperMock();
+		$sleeper
+			->expects($this->never())
+			->method($this->anything());
+
+		$consumerHandler = new ConsumerHandler(
+			$stopConsumerSleepSeconds,
+			$dequeuer,
+			$logger,
+			$entityManager,
+			$sleeper
+		);
+
+		$this->assertSame(ConsumerInterface::MSG_REJECT_REQUEUE, $consumerHandler->processMessage(
+			function (): int {
+				throw new \Exception('Test');
+			}
+		));
+	}
+
 	/**
 	 * @return \OldSound\RabbitMqBundle\RabbitMq\DequeuerInterface|\PHPUnit\Framework\MockObject\MockObject
 	 */

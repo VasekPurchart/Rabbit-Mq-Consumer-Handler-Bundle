@@ -33,8 +33,9 @@ class Configuration extends \Consistence\ObjectPrototype implements \Symfony\Com
 			->children()
 				->integerNode(self::PARAMETER_STOP_CONSUMER_SLEEP_SECONDS)
 					->info('Generally how long is needed for the program to run, to be considered started, achieved by sleeping when stopping prematurely')
-					->min(1)
+					->min(0)
 					->defaultValue(self::DEFAULT_STOP_CONSUMER_SLEEP_SECONDS)
+					->treatFalseLike(0)
 					->end()
 				->end()
 			->end();

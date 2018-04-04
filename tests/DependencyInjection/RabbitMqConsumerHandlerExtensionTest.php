@@ -59,4 +59,18 @@ class RabbitMqConsumerHandlerExtensionTest extends \Matthias\SymfonyDependencyIn
 		$this->compile();
 	}
 
+	public function testDisableStopConsumerSleepSeconds(): void
+	{
+		$this->load([
+			'stop_consumer_sleep_seconds' => false,
+		]);
+
+		$this->assertContainerBuilderHasParameter(
+			RabbitMqConsumerHandlerExtension::CONTAINER_PARAMETER_STOP_CONSUMER_SLEEP_SECONDS,
+			0
+		);
+
+		$this->compile();
+	}
+
 }

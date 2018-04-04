@@ -84,7 +84,9 @@ class ConsumerHandler extends \Consistence\ObjectPrototype
 		$this->log(LogLevel::WARNING, 'Consumer will be stopped, reason: ' . $reason);
 		$this->dequeuer->forceStopConsumer();
 		$this->stopAlreadyRequested = true;
-		$this->sleeper->sleep($this->stopConsumerSleepSeconds);
+		if ($this->stopConsumerSleepSeconds > 0) {
+			$this->sleeper->sleep($this->stopConsumerSleepSeconds);
+		}
 	}
 
 	/**
