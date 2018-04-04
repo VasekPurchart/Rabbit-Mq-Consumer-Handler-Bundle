@@ -55,6 +55,10 @@ class RabbitMqConsumerHandlerExtensionTest extends \Matthias\SymfonyDependencyIn
 				RabbitMqConsumerHandlerExtension::CONTAINER_SERVICE_LOGGER,
 				'logger',
 			],
+			[
+				RabbitMqConsumerHandlerExtension::CONTAINER_SERVICE_ENTITY_MANAGER,
+				'doctrine.orm.default_entity_manager',
+			],
 		];
 	}
 
@@ -112,6 +116,22 @@ class RabbitMqConsumerHandlerExtensionTest extends \Matthias\SymfonyDependencyIn
 		$this->assertContainerBuilderHasAlias(
 			RabbitMqConsumerHandlerExtension::CONTAINER_SERVICE_LOGGER,
 			'my_logger'
+		);
+
+		$this->compile();
+	}
+
+	public function testConfigureCustomEntityManagerInstance(): void
+	{
+		$this->load([
+			'entity_manager' => [
+				'service_id' => 'my_entity_manager',
+			],
+		]);
+
+		$this->assertContainerBuilderHasAlias(
+			RabbitMqConsumerHandlerExtension::CONTAINER_SERVICE_ENTITY_MANAGER,
+			'my_entity_manager'
 		);
 
 		$this->compile();

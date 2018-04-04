@@ -32,6 +32,7 @@ class RabbitMqConsumerHandlerExtension extends \Symfony\Component\HttpKernel\Dep
 		);
 
 		$this->loadLogger($mergedConfig, $container);
+		$this->loadEntityManager($mergedConfig, $container);
 
 		$yamlFileLoader->load('services.yml');
 	}
@@ -45,6 +46,18 @@ class RabbitMqConsumerHandlerExtension extends \Symfony\Component\HttpKernel\Dep
 		$container->setAlias(
 			self::CONTAINER_SERVICE_LOGGER,
 			$mergedConfig[Configuration::SECTION_LOGGER][Configuration::PARAMETER_LOGGER_SERVICE_ID]
+		);
+	}
+
+	/**
+	 * @param mixed[] $mergedConfig
+	 * @param \Symfony\Component\DependencyInjection\ContainerBuilder $container
+	 */
+	private function loadEntityManager(array $mergedConfig, ContainerBuilder $container): void
+	{
+		$container->setAlias(
+			self::CONTAINER_SERVICE_ENTITY_MANAGER,
+			$mergedConfig[Configuration::SECTION_ENTITY_MANAGER][Configuration::PARAMETER_ENTITY_MANAGER_SERVICE_ID]
 		);
 	}
 

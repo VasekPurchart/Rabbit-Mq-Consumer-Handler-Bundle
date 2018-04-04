@@ -5,5 +5,3 @@ services:
         public: false
 
     VasekPurchart\RabbitMqConsumerHandlerBundle\Sleeper\Sleeper: ~
-
-    vasek_purchart.rabbit_mq_consumer_handler.entity_manager: '@doctrine.orm.default_entity_manager'
