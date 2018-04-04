@@ -80,6 +80,7 @@ class ConsumerHandlerTest extends \PHPUnit\Framework\TestCase
 			$dequeuer,
 			$logger,
 			$entityManager,
+			true,
 			$sleeper
 		);
 
@@ -135,6 +136,7 @@ class ConsumerHandlerTest extends \PHPUnit\Framework\TestCase
 			$dequeuer,
 			$logger,
 			$entityManager,
+			true,
 			$sleeper
 		);
 
@@ -178,6 +180,7 @@ class ConsumerHandlerTest extends \PHPUnit\Framework\TestCase
 			$dequeuer,
 			$logger,
 			$entityManager,
+			true,
 			$sleeper
 		);
 
@@ -201,9 +204,6 @@ class ConsumerHandlerTest extends \PHPUnit\Framework\TestCase
 			->method($this->anything());
 
 		$entityManager = $this->getOpenEntityManagerMock();
-		$entityManager
-			->expects($this->once())
-			->method('clear');
 
 		$sleeper = $this->getSleeperMock();
 		$sleeper
@@ -215,6 +215,7 @@ class ConsumerHandlerTest extends \PHPUnit\Framework\TestCase
 			$dequeuer,
 			$logger,
 			$entityManager,
+			false,
 			$sleeper
 		);
 	}
@@ -239,6 +240,7 @@ class ConsumerHandlerTest extends \PHPUnit\Framework\TestCase
 			$dequeuer,
 			$logger,
 			$entityManager,
+			true,
 			$sleeper
 		);
 
@@ -247,6 +249,86 @@ class ConsumerHandlerTest extends \PHPUnit\Framework\TestCase
 				throw new \Exception('Test');
 			}
 		));
+	}
+
+	public function testClearEntityManagerBeforeMessage(): void
+	{
+		$stopConsumerSleepSeconds = 2;
+
+		$dequeuer = $this->getDequeuerMock();
+		$dequeuer
+			->expects($this->never())
+			->method($this->anything());
+
+		$logger = $this->getLoggerMock();
+		$logger
+			->expects($this->never())
+			->method($this->anything());
+
+		$entityManager = $this->getOpenEntityManagerMock();
+		$entityManager
+			->expects($this->once())
+			->method('clear');
+
+		$sleeper = $this->getSleeperMock();
+		$sleeper
+			->expects($this->never())
+			->method($this->anything());
+
+		$consumerHandler = new ConsumerHandler(
+			$stopConsumerSleepSeconds,
+			$dequeuer,
+			$logger,
+			$entityManager,
+			true,
+			$sleeper
+		);
+
+		$consumerHandler->processMessage(
+			function (): int {
+				return ConsumerInterface::MSG_ACK;
+			}
+		);
+	}
+
+	public function tesDisableClearingEntityManagerBeforeMessage(): void
+	{
+		$stopConsumerSleepSeconds = 2;
+
+		$dequeuer = $this->getDequeuerMock();
+		$dequeuer
+			->expects($this->never())
+			->method($this->anything());
+
+		$logger = $this->getLoggerMock();
+		$logger
+			->expects($this->never())
+			->method($this->anything());
+
+		$entityManager = $this->getOpenEntityManagerMock();
+		$entityManager
+			->expects($this->never())
+			->method('clear');
+
+		$sleeper = $this->getSleeperMock();
+		$sleeper
+			->expects($this->never())
+			->method($this->anything());
+
+		$consumerHandler = new ConsumerHandler(
+			$stopConsumerSleepSeconds,
+			$dequeuer,
+			$logger,
+			$entityManager,
+			false,
+			$sleeper
+		);
+
+		$consumerHandler->processMessage(
+			function (): int {
+				return ConsumerInterface::MSG_ACK;
+			}
+		);
 	}
 
 	/**

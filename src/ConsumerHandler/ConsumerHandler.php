@@ -27,6 +27,9 @@ class ConsumerHandler extends \Consistence\ObjectPrototype
 	/** @var \Doctrine\ORM\EntityManager */
 	private $entityManager;
 
+	/** @var bool */
+	private $clearEntityManager;
+
 	/** @var \VasekPurchart\RabbitMqConsumerHandlerBundle\Sleeper\Sleeper */
 	private $sleeper;
 
@@ -38,6 +41,7 @@ class ConsumerHandler extends \Consistence\ObjectPrototype
 		DequeuerInterface $dequeuer,
 		LoggerInterface $logger,
 		EntityManager $entityManager,
+		bool $clearEntityManager,
 		Sleeper $sleeper
 	)
 	{
@@ -45,6 +49,7 @@ class ConsumerHandler extends \Consistence\ObjectPrototype
 		$this->dequeuer = $dequeuer;
 		$this->logger = $logger;
 		$this->entityManager = $entityManager;
+		$this->clearEntityManager = $clearEntityManager;
 		$this->sleeper = $sleeper;
 		$this->stopAlreadyRequested = false;
 	}
@@ -58,7 +63,9 @@ class ConsumerHandler extends \Consistence\ObjectPrototype
 	): int
 	{
 		try {
-			$this->entityManager->clear();
+			if ($this->clearEntityManager) {
+				$this->entityManager->clear();
+			}
 
 			return $processMessageCallback($this);
 

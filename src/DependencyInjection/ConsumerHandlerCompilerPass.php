@@ -39,6 +39,7 @@ class ConsumerHandlerCompilerPass extends \Consistence\ObjectPrototype implement
 			'$dequeuer' => new Reference($consumerServiceId),
 			'$logger' => new Reference(RabbitMqConsumerHandlerExtension::CONTAINER_SERVICE_LOGGER),
 			'$entityManager' => new Reference(RabbitMqConsumerHandlerExtension::CONTAINER_SERVICE_ENTITY_MANAGER),
+			'$clearEntityManager' => new Parameter(RabbitMqConsumerHandlerExtension::CONTAINER_PARAMETER_ENTITY_MANAGER_CLEAR),
 			'$sleeper' => new Reference(Sleeper::class),
 		]);
 		$consumerHandlerServiceDefinition->setPublic(true);

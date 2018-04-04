@@ -15,6 +15,7 @@ class Configuration extends \Consistence\ObjectPrototype implements \Symfony\Com
 	public const DEFAULT_ENTITY_MANAGER_SERVICE_ID = 'doctrine.orm.default_entity_manager';
 
 	public const PARAMETER_ENTITY_MANAGER_SERVICE_ID = 'service_id';
+	public const PARAMETER_ENTITY_MANAGER_CLEAR = 'clear_em_before_message';
 	public const PARAMETER_LOGGER_SERVICE_ID = 'service_id';
 	public const PARAMETER_STOP_CONSUMER_SLEEP_SECONDS = 'stop_consumer_sleep_seconds';
 
@@ -59,6 +60,10 @@ class Configuration extends \Consistence\ObjectPrototype implements \Symfony\Com
 						->scalarNode(self::PARAMETER_ENTITY_MANAGER_SERVICE_ID)
 							->info('EntityManager service ID, which instance is used within the consumer')
 							->defaultValue(self::DEFAULT_ENTITY_MANAGER_SERVICE_ID)
+							->end()
+						->booleanNode(self::PARAMETER_ENTITY_MANAGER_CLEAR)
+							->info('Clear EntityManager before processing message')
+							->defaultValue(true)
 							->end()
 						->end()
 					->end()

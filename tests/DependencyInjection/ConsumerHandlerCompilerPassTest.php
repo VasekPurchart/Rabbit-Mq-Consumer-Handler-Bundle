@@ -95,6 +95,19 @@ class ConsumerHandlerCompilerPassTest extends \Matthias\SymfonyDependencyInjecti
 			RabbitMqConsumerHandlerExtension::CONTAINER_SERVICE_ENTITY_MANAGER,
 			$entityManager->__toString()
 		);
+
+		$this->assertContainerBuilderHasServiceDefinitionWithArgument(
+			'vasek_purchart.rabbit_mq_consumer_handler.consumer_handler.id.default_configuration',
+			'$clearEntityManager'
+		);
+		$clearEntityManager = $this->container->findDefinition(
+			'vasek_purchart.rabbit_mq_consumer_handler.consumer_handler.id.default_configuration'
+		)->getArgument('$clearEntityManager');
+		$this->assertInstanceOf(Parameter::class, $clearEntityManager);
+		$this->assertSame(
+			RabbitMqConsumerHandlerExtension::CONTAINER_PARAMETER_ENTITY_MANAGER_CLEAR,
+			$clearEntityManager->__toString()
+		);
 	}
 
 	private function registerConsumer(string $consumerServiceId): void

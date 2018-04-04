@@ -27,6 +27,10 @@ class RabbitMqConsumerHandlerExtensionTest extends \Matthias\SymfonyDependencyIn
 				RabbitMqConsumerHandlerExtension::CONTAINER_PARAMETER_STOP_CONSUMER_SLEEP_SECONDS,
 				1,
 			],
+			[
+				RabbitMqConsumerHandlerExtension::CONTAINER_PARAMETER_ENTITY_MANAGER_CLEAR,
+				true,
+			],
 		];
 	}
 
@@ -132,6 +136,22 @@ class RabbitMqConsumerHandlerExtensionTest extends \Matthias\SymfonyDependencyIn
 		$this->assertContainerBuilderHasAlias(
 			RabbitMqConsumerHandlerExtension::CONTAINER_SERVICE_ENTITY_MANAGER,
 			'my_entity_manager'
+		);
+
+		$this->compile();
+	}
+
+	public function testDisableEntityManagerClear(): void
+	{
+		$this->load([
+			'entity_manager' => [
+				'clear_em_before_message' => false,
+			],
+		]);
+
+		$this->assertContainerBuilderHasParameter(
+			RabbitMqConsumerHandlerExtension::CONTAINER_PARAMETER_ENTITY_MANAGER_CLEAR,
+			false
 		);
 
 		$this->compile();

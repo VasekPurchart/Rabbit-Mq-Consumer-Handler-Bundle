@@ -13,6 +13,7 @@ class RabbitMqConsumerHandlerExtension extends \Symfony\Component\HttpKernel\Dep
 
 	use \Consistence\Type\ObjectMixinTrait;
 
+	public const CONTAINER_PARAMETER_ENTITY_MANAGER_CLEAR = 'vasek_purchart.rabbit_mq_consumer_handler.entity_manager.clear';
 	public const CONTAINER_PARAMETER_STOP_CONSUMER_SLEEP_SECONDS = 'vasek_purchart.rabbit_mq_consumer_handler.stop_consumer_sleep_seconds';
 
 	public const CONTAINER_SERVICE_ENTITY_MANAGER = 'vasek_purchart.rabbit_mq_consumer_handler.entity_manager';
@@ -58,6 +59,10 @@ class RabbitMqConsumerHandlerExtension extends \Symfony\Component\HttpKernel\Dep
 		$container->setAlias(
 			self::CONTAINER_SERVICE_ENTITY_MANAGER,
 			$mergedConfig[Configuration::SECTION_ENTITY_MANAGER][Configuration::PARAMETER_ENTITY_MANAGER_SERVICE_ID]
+		);
+		$container->setParameter(
+			self::CONTAINER_PARAMETER_ENTITY_MANAGER_CLEAR,
+			$mergedConfig[Configuration::SECTION_ENTITY_MANAGER][Configuration::PARAMETER_ENTITY_MANAGER_CLEAR]
 		);
 	}
 
