@@ -45,6 +45,34 @@ class RabbitMqConsumerHandlerExtensionTest extends \Matthias\SymfonyDependencyIn
 		$this->compile();
 	}
 
+	/**
+	 * @return mixed[][]
+	 */
+	public function defaultConfigurationServiceAliasesProvider(): array
+	{
+		return [
+			[
+				RabbitMqConsumerHandlerExtension::CONTAINER_SERVICE_LOGGER,
+				'logger',
+			],
+		];
+	}
+
+	/**
+	 * @dataProvider defaultConfigurationServiceAliasesProvider
+	 *
+	 * @param string $aliasName
+	 * @param string $targetServiceId
+	 */
+	public function testDefaultConfigurationServices(string $aliasName, string $targetServiceId): void
+	{
+		$this->load();
+
+		$this->assertContainerBuilderHasAlias($aliasName, $targetServiceId);
+
+		$this->compile();
+	}
+
 	public function testConfigureStopConsumerSleepSeconds(): void
 	{
 		$this->load([
@@ -68,6 +96,22 @@ class RabbitMqConsumerHandlerExtensionTest extends \Matthias\SymfonyDependencyIn
 		$this->assertContainerBuilderHasParameter(
 			RabbitMqConsumerHandlerExtension::CONTAINER_PARAMETER_STOP_CONSUMER_SLEEP_SECONDS,
 			0
+		);
+
+		$this->compile();
+	}
+
+	public function testConfigureCustomLoggerInstance(): void
+	{
+		$this->load([
+			'logger' => [
+				'service_id' => 'my_logger',
+			],
+		]);
+
+		$this->assertContainerBuilderHasAlias(
+			RabbitMqConsumerHandlerExtension::CONTAINER_SERVICE_LOGGER,
+			'my_logger'
 		);
 
 		$this->compile();

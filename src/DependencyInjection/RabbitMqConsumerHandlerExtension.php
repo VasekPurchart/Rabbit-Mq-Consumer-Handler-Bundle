@@ -31,7 +31,21 @@ class RabbitMqConsumerHandlerExtension extends \Symfony\Component\HttpKernel\Dep
 			$mergedConfig[Configuration::PARAMETER_STOP_CONSUMER_SLEEP_SECONDS]
 		);
 
+		$this->loadLogger($mergedConfig, $container);
+
 		$yamlFileLoader->load('services.yml');
+	}
+
+	/**
+	 * @param mixed[] $mergedConfig
+	 * @param \Symfony\Component\DependencyInjection\ContainerBuilder $container
+	 */
+	private function loadLogger(array $mergedConfig, ContainerBuilder $container): void
+	{
+		$container->setAlias(
+			self::CONTAINER_SERVICE_LOGGER,
+			$mergedConfig[Configuration::SECTION_LOGGER][Configuration::PARAMETER_LOGGER_SERVICE_ID]
+		);
 	}
 
 	/**
