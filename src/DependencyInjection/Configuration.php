@@ -39,12 +39,12 @@ class Configuration extends \Consistence\ObjectPrototype implements \Symfony\Com
 		$treeBuilder = new TreeBuilder();
 		$rootNode = $treeBuilder->root($this->rootNode);
 
-		$this->addConsumerConfiguration($rootNode);
+		$this->addConsumerConfiguration($rootNode, true);
 
 		return $treeBuilder;
 	}
 
-	private function addConsumerConfiguration(ArrayNodeDefinition $node): void
+	private function addConsumerConfiguration(ArrayNodeDefinition $node, bool $addDefaults): void
 	{
 		$consumerSleepSecondsParameter = $node
 			->children()
@@ -52,41 +52,44 @@ class Configuration extends \Consistence\ObjectPrototype implements \Symfony\Com
 		$consumerSleepSecondsParameter
 			->info('Generally how long is needed for the program to run, to be considered started, achieved by sleeping when stopping prematurely')
 			->min(0)
-			->defaultValue(self::DEFAULT_STOP_CONSUMER_SLEEP_SECONDS)
 			->treatFalseLike(0);
 
 		$loggerSection = $node
 			->children()
 			->arrayNode(self::SECTION_LOGGER);
-		$loggerSection
-			->addDefaultsIfNotSet();
 
 		$loggerServiceIdParameter = $loggerSection
 			->children()
 			->scalarNode(self::PARAMETER_LOGGER_SERVICE_ID);
 		$loggerServiceIdParameter
-			->info('Logger service ID, which instance will be used to log messages and exceptions')
-			->defaultValue(self::DEFAULT_LOGGER_SERVICE_ID);
+			->info('Logger service ID, which instance will be used to log messages and exceptions');
 
 		$entityManagerSection = $node
 			->children()
 			->arrayNode(self::SECTION_ENTITY_MANAGER);
-		$entityManagerSection
-			->addDefaultsIfNotSet();
 
 		$entityManagerServiceIdParameter = $entityManagerSection
 			->children()
 			->scalarNode(self::PARAMETER_ENTITY_MANAGER_SERVICE_ID);
 		$entityManagerServiceIdParameter
-			->info('EntityManager service ID, which instance is used within the consumer')
-			->defaultValue(self::DEFAULT_ENTITY_MANAGER_SERVICE_ID);
+			->info('EntityManager service ID, which instance is used within the consumer');
 
 		$entityManagerClearParameter = $entityManagerSection
 			->children()
 			->booleanNode(self::PARAMETER_ENTITY_MANAGER_CLEAR);
 		$entityManagerClearParameter
-			->info('Clear EntityManager before processing message')
-			->defaultValue(true);
+			->info('Clear EntityManager before processing message');
+
+		if ($addDefaults) {
+			$consumerSleepSecondsParameter->defaultValue(self::DEFAULT_STOP_CONSUMER_SLEEP_SECONDS);
+
+			$loggerSection->addDefaultsIfNotSet();
+			$loggerServiceIdParameter->defaultValue(self::DEFAULT_LOGGER_SERVICE_ID);
+
+			$entityManagerSection->addDefaultsIfNotSet();
+			$entityManagerServiceIdParameter->defaultValue(self::DEFAULT_ENTITY_MANAGER_SERVICE_ID);
+			$entityManagerClearParameter->defaultValue(true);
+		}
 	}
 
 }
