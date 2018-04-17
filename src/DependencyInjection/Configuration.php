@@ -41,6 +41,12 @@ class Configuration extends \Consistence\ObjectPrototype implements \Symfony\Com
 
 		$this->addConsumerConfiguration($rootNode, true);
 
+		$consumersSection = $rootNode
+				->children()
+				->arrayNode(self::SECTION_CONSUMERS);
+		$consumersSection->useAttributeAsKey('name');
+		$this->addConsumerConfiguration($consumersSection->arrayPrototype(), false);
+
 		return $treeBuilder;
 	}
 

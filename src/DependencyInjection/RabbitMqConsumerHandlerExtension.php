@@ -13,6 +13,7 @@ class RabbitMqConsumerHandlerExtension extends \Symfony\Component\HttpKernel\Dep
 
 	use \Consistence\Type\ObjectMixinTrait;
 
+	public const CONTAINER_PARAMETER_CUSTOM_CONSUMER_CONFIGURATIONS = 'vasek_purchart.rabbit_mq_consumer_handler.custom_consumer_configurations';
 	public const CONTAINER_PARAMETER_ENTITY_MANAGER_CLEAR = 'vasek_purchart.rabbit_mq_consumer_handler.entity_manager.clear';
 	public const CONTAINER_PARAMETER_STOP_CONSUMER_SLEEP_SECONDS = 'vasek_purchart.rabbit_mq_consumer_handler.stop_consumer_sleep_seconds';
 
@@ -34,6 +35,7 @@ class RabbitMqConsumerHandlerExtension extends \Symfony\Component\HttpKernel\Dep
 
 		$this->loadLogger($mergedConfig, $container);
 		$this->loadEntityManager($mergedConfig, $container);
+		$this->loadConsumerSpecificConfiguration($mergedConfig, $container);
 
 		$yamlFileLoader->load('services.yml');
 	}
@@ -63,6 +65,18 @@ class RabbitMqConsumerHandlerExtension extends \Symfony\Component\HttpKernel\Dep
 		$container->setParameter(
 			self::CONTAINER_PARAMETER_ENTITY_MANAGER_CLEAR,
 			$mergedConfig[Configuration::SECTION_ENTITY_MANAGER][Configuration::PARAMETER_ENTITY_MANAGER_CLEAR]
+		);
+	}
+
+	/**
+	 * @param mixed[] $mergedConfig
+	 * @param \Symfony\Component\DependencyInjection\ContainerBuilder $container
+	 */
+	private function loadConsumerSpecificConfiguration(array $mergedConfig, ContainerBuilder $container): void
+	{
+		$container->setParameter(
+			self::CONTAINER_PARAMETER_CUSTOM_CONSUMER_CONFIGURATIONS,
+			$mergedConfig[Configuration::SECTION_CONSUMERS]
 		);
 	}
 

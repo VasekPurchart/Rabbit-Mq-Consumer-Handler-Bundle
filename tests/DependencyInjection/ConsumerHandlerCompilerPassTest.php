@@ -19,6 +19,14 @@ class ConsumerHandlerCompilerPassTest extends \Matthias\SymfonyDependencyInjecti
 		$container->addCompilerPass(new ConsumerHandlerCompilerPass());
 	}
 
+	protected function setUp()
+	{
+		parent::setUp();
+
+		$this->container->registerExtension(new RabbitMqConsumerHandlerExtension());
+		$this->container->loadFromExtension('rabbit_mq_consumer_handler');
+	}
+
 	public function testWrapProducersWithDatabaseTransactionProducer(): void
 	{
 		$consumerServiceId = 'old_sound_rabbit_mq.my_consumer_name_consumer';
@@ -47,6 +55,21 @@ class ConsumerHandlerCompilerPassTest extends \Matthias\SymfonyDependencyInjecti
 
 	public function testConsumerConfiguration(): void
 	{
+		$this->container->loadFromExtension('rabbit_mq_consumer_handler', [
+			'consumers' => [
+				'custom-configuration' => [
+					'stop_consumer_sleep_seconds' => 3,
+					'logger' => [
+						'service_id' => 'my_custom_logger',
+					],
+					'entity_manager' => [
+						'service_id' => 'my_custom_entity_manager',
+						'clear_em_before_message' => false,
+					],
+				],
+			],
+		]);
+
 		$this->registerConsumer('old_sound_rabbit_mq.default_configuration_consumer');
 		$this->registerConsumer('old_sound_rabbit_mq.custom_configuration_consumer');
 
@@ -54,6 +77,10 @@ class ConsumerHandlerCompilerPassTest extends \Matthias\SymfonyDependencyInjecti
 
 		$this->assertContainerBuilderHasService(
 			'vasek_purchart.rabbit_mq_consumer_handler.consumer_handler.id.default_configuration',
+			ConsumerHandler::class
+		);
+		$this->assertContainerBuilderHasService(
+			'vasek_purchart.rabbit_mq_consumer_handler.consumer_handler.id.custom_configuration',
 			ConsumerHandler::class
 		);
 
@@ -69,6 +96,17 @@ class ConsumerHandlerCompilerPassTest extends \Matthias\SymfonyDependencyInjecti
 			RabbitMqConsumerHandlerExtension::CONTAINER_PARAMETER_STOP_CONSUMER_SLEEP_SECONDS,
 			$stopConsumerSleepSeconds->__toString()
 		);
+		$this->assertContainerBuilderHasServiceDefinitionWithArgument(
+			'vasek_purchart.rabbit_mq_consumer_handler.consumer_handler.id.custom_configuration',
+			'$stopConsumerSleepSeconds'
+		);
+		$stopConsumerSleepSeconds = $this->container->findDefinition(
+			'vasek_purchart.rabbit_mq_consumer_handler.consumer_handler.id.custom_configuration'
+		)->getArgument('$stopConsumerSleepSeconds');
+		$this->assertSame(
+			3,
+			$stopConsumerSleepSeconds
+		);
 
 		$this->assertContainerBuilderHasServiceDefinitionWithArgument(
 			'vasek_purchart.rabbit_mq_consumer_handler.consumer_handler.id.default_configuration',
@@ -80,6 +118,18 @@ class ConsumerHandlerCompilerPassTest extends \Matthias\SymfonyDependencyInjecti
 		$this->assertInstanceOf(Reference::class, $logger);
 		$this->assertSame(
 			RabbitMqConsumerHandlerExtension::CONTAINER_SERVICE_LOGGER,
+			$logger->__toString()
+		);
+		$this->assertContainerBuilderHasServiceDefinitionWithArgument(
+			'vasek_purchart.rabbit_mq_consumer_handler.consumer_handler.id.custom_configuration',
+			'$logger'
+		);
+		$logger = $this->container->findDefinition(
+			'vasek_purchart.rabbit_mq_consumer_handler.consumer_handler.id.custom_configuration'
+		)->getArgument('$logger');
+		$this->assertInstanceOf(Reference::class, $logger);
+		$this->assertSame(
+			'my_custom_logger',
 			$logger->__toString()
 		);
 
@@ -95,6 +145,18 @@ class ConsumerHandlerCompilerPassTest extends \Matthias\SymfonyDependencyInjecti
 			RabbitMqConsumerHandlerExtension::CONTAINER_SERVICE_ENTITY_MANAGER,
 			$entityManager->__toString()
 		);
+		$this->assertContainerBuilderHasServiceDefinitionWithArgument(
+			'vasek_purchart.rabbit_mq_consumer_handler.consumer_handler.id.custom_configuration',
+			'$entityManager'
+		);
+		$entityManager = $this->container->findDefinition(
+			'vasek_purchart.rabbit_mq_consumer_handler.consumer_handler.id.custom_configuration'
+		)->getArgument('$entityManager');
+		$this->assertInstanceOf(Reference::class, $entityManager);
+		$this->assertSame(
+			'my_custom_entity_manager',
+			$entityManager->__toString()
+		);
 
 		$this->assertContainerBuilderHasServiceDefinitionWithArgument(
 			'vasek_purchart.rabbit_mq_consumer_handler.consumer_handler.id.default_configuration',
@@ -107,6 +169,17 @@ class ConsumerHandlerCompilerPassTest extends \Matthias\SymfonyDependencyInjecti
 		$this->assertSame(
 			RabbitMqConsumerHandlerExtension::CONTAINER_PARAMETER_ENTITY_MANAGER_CLEAR,
 			$clearEntityManager->__toString()
+		);
+		$this->assertContainerBuilderHasServiceDefinitionWithArgument(
+			'vasek_purchart.rabbit_mq_consumer_handler.consumer_handler.id.custom_configuration',
+			'$clearEntityManager'
+		);
+		$clearEntityManager = $this->container->findDefinition(
+			'vasek_purchart.rabbit_mq_consumer_handler.consumer_handler.id.custom_configuration'
+		)->getArgument('$clearEntityManager');
+		$this->assertSame(
+			false,
+			$clearEntityManager
 		);
 	}
 
