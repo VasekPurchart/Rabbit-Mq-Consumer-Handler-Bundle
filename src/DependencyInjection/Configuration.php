@@ -4,6 +4,7 @@ declare(strict_types = 1);
 
 namespace VasekPurchart\RabbitMqConsumerHandlerBundle\DependencyInjection;
 
+use Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition;
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 
 class Configuration extends \Consistence\ObjectPrototype implements \Symfony\Component\Config\Definition\ConfigurationInterface
@@ -37,7 +38,14 @@ class Configuration extends \Consistence\ObjectPrototype implements \Symfony\Com
 		$treeBuilder = new TreeBuilder();
 		$rootNode = $treeBuilder->root($this->rootNode);
 
-		$rootNode
+		$this->addConsumerConfiguration($rootNode);
+
+		return $treeBuilder;
+	}
+
+	private function addConsumerConfiguration(ArrayNodeDefinition $node): void
+	{
+		$node
 			->children()
 				->integerNode(self::PARAMETER_STOP_CONSUMER_SLEEP_SECONDS)
 					->info('Generally how long is needed for the program to run, to be considered started, achieved by sleeping when stopping prematurely')
@@ -69,8 +77,6 @@ class Configuration extends \Consistence\ObjectPrototype implements \Symfony\Com
 					->end()
 				->end()
 			->end();
-
-		return $treeBuilder;
 	}
 
 }
