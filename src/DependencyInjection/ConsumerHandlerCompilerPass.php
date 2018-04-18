@@ -32,6 +32,12 @@ class ConsumerHandlerCompilerPass extends \Consistence\ObjectPrototype implement
 			$customConfiguration = ArrayType::findValue($customConsumerConfigurations, $consumerName);
 			$consumerHandlerDefinition = $this->getConsumerHandlerDefinition($consumerServiceId, $customConfiguration);
 			$container->setDefinition($consumerHandlerServiceId, $consumerHandlerDefinition);
+			if ($customConfiguration !== null) {
+				unset($customConsumerConfigurations[$consumerName]);
+			}
+		}
+		if (count($customConsumerConfigurations) > 0) {
+			throw new \VasekPurchart\RabbitMqConsumerHandlerBundle\DependencyInjection\UnusedConsumerConfigurationException(array_keys($customConsumerConfigurations));
 		}
 	}
 

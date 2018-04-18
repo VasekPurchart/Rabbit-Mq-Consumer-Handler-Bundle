@@ -183,6 +183,28 @@ class ConsumerHandlerCompilerPassTest extends \Matthias\SymfonyDependencyInjecti
 		);
 	}
 
+	public function testDetectUnusedConsumerConfiguration(): void
+	{
+		$this->container->loadFromExtension('rabbit_mq_consumer_handler', [
+			'consumers' => [
+				'my-consumer-xxx' => [
+					'stop_consumer_sleep_seconds' => 3,
+				],
+			],
+		]);
+
+		$this->registerConsumer('old_sound_rabbit_mq.my_consumer_consumer');
+
+		try {
+			$this->compile();
+
+			$this->fail('Exception expected, should not be reached');
+
+		} catch (\VasekPurchart\RabbitMqConsumerHandlerBundle\DependencyInjection\UnusedConsumerConfigurationException $e) {
+			$this->assertContains('my_consumer_xxx', $e->getConsumerNames());
+		}
+	}
+
 	private function registerConsumer(string $consumerServiceId): void
 	{
 		$consumerDefinition = new Definition(Consumer::class);
