@@ -24,22 +24,73 @@ class ConsumerHandlerCompilerPass extends \Consistence\ObjectPrototype implement
 
 	public function process(ContainerBuilder $container)
 	{
+		$customConsumerConfigurations = $container->getParameter(RabbitMqConsumerHandlerExtension::CONTAINER_PARAMETER_CUSTOM_CONSUMER_CONFIGURATIONS);
+
 		foreach ($container->findTaggedServiceIds(self::RABBIT_MQ_EXTENSION_CONSUMER_TAG) as $consumerServiceId => $attributes) {
 			$consumerName = $this->getConsumerName($consumerServiceId);
 			$consumerHandlerServiceId = $this->getConsumerHandlerServiceId($consumerName);
-			$consumerHandlerDefinition = $this->getConsumerHandlerDefinition($consumerServiceId);
+			$customConfiguration = ArrayType::findValue($customConsumerConfigurations, $consumerName);
+			$consumerHandlerDefinition = $this->getConsumerHandlerDefinition($consumerServiceId, $customConfiguration);
 			$container->setDefinition($consumerHandlerServiceId, $consumerHandlerDefinition);
+			if ($customConfiguration !== null) {
+				unset($customConsumerConfigurations[$consumerName]);
+			}
+		}
+		if (count($customConsumerConfigurations) > 0) {
+			throw new \VasekPurchart\RabbitMqConsumerHandlerBundle\DependencyInjection\UnusedConsumerConfigurationException(array_keys($customConsumerConfigurations));
 		}
 	}
 
-	private function getConsumerHandlerDefinition(string $consumerServiceId): Definition
+	/**
+	 * @param string $consumerServiceId
+	 * @param mixed[]|null $customConfiguration options for this runner from configuration
+	 * @return \Symfony\Component\DependencyInjection\Definition
+	 */
+	private function getConsumerHandlerDefinition(string $consumerServiceId, ?array $customConfiguration): Definition
 	{
+		$stopConsumerSleepSeconds = $customConfiguration !== null && ArrayType::containsKey(
+			$customConfiguration,
+			Configuration::PARAMETER_STOP_CONSUMER_SLEEP_SECONDS
+		)
+			? $customConfiguration[Configuration::PARAMETER_STOP_CONSUMER_SLEEP_SECONDS]
+			: new Parameter(RabbitMqConsumerHandlerExtension::CONTAINER_PARAMETER_STOP_CONSUMER_SLEEP_SECONDS);
+
+		$logger = $customConfiguration !== null && ArrayType::containsKey(
+			$customConfiguration,
+			Configuration::SECTION_LOGGER
+		) && ArrayType::containsKey(
+			$customConfiguration[Configuration::SECTION_LOGGER],
+			Configuration::PARAMETER_LOGGER_SERVICE_ID
+		)
+			? new Reference($customConfiguration[Configuration::SECTION_LOGGER][Configuration::PARAMETER_LOGGER_SERVICE_ID])
+			: new Reference(RabbitMqConsumerHandlerExtension::CONTAINER_SERVICE_LOGGER);
+
+		$entityManager = $customConfiguration !== null && ArrayType::containsKey(
+			$customConfiguration,
+			Configuration::SECTION_ENTITY_MANAGER
+		) && ArrayType::containsKey(
+			$customConfiguration[Configuration::SECTION_ENTITY_MANAGER],
+			Configuration::PARAMETER_ENTITY_MANAGER_SERVICE_ID
+		)
+			? new Reference($customConfiguration[Configuration::SECTION_ENTITY_MANAGER][Configuration::PARAMETER_ENTITY_MANAGER_SERVICE_ID])
+			: new Reference(RabbitMqConsumerHandlerExtension::CONTAINER_SERVICE_ENTITY_MANAGER);
+
+		$clearEntityManager = $customConfiguration !== null && ArrayType::containsKey(
+			$customConfiguration,
+			Configuration::SECTION_ENTITY_MANAGER
+		) && ArrayType::containsKey(
+			$customConfiguration[Configuration::SECTION_ENTITY_MANAGER],
+			Configuration::PARAMETER_ENTITY_MANAGER_CLEAR
+		)
+			? $customConfiguration[Configuration::SECTION_ENTITY_MANAGER][Configuration::PARAMETER_ENTITY_MANAGER_CLEAR]
+			: new Parameter(RabbitMqConsumerHandlerExtension::CONTAINER_PARAMETER_ENTITY_MANAGER_CLEAR);
+
 		$consumerHandlerServiceDefinition = new Definition(ConsumerHandler::class, [
-			'$stopConsumerSleepSeconds' => new Parameter(RabbitMqConsumerHandlerExtension::CONTAINER_PARAMETER_STOP_CONSUMER_SLEEP_SECONDS),
+			'$stopConsumerSleepSeconds' => $stopConsumerSleepSeconds,
 			'$dequeuer' => new Reference($consumerServiceId),
-			'$logger' => new Reference(RabbitMqConsumerHandlerExtension::CONTAINER_SERVICE_LOGGER),
-			'$entityManager' => new Reference(RabbitMqConsumerHandlerExtension::CONTAINER_SERVICE_ENTITY_MANAGER),
-			'$clearEntityManager' => new Parameter(RabbitMqConsumerHandlerExtension::CONTAINER_PARAMETER_ENTITY_MANAGER_CLEAR),
+			'$logger' => $logger,
+			'$entityManager' => $entityManager,
+			'$clearEntityManager' => $clearEntityManager,
 			'$sleeper' => new Reference(Sleeper::class),
 		]);
 		$consumerHandlerServiceDefinition->setPublic(true);
