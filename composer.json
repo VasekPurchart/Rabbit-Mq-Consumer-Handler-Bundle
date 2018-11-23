@@ -10,6 +10,7 @@
 		}
 	],
 	"require": {
+		"php": "~7.2",
 		"consistence/consistence": "~1.0",
 		"doctrine/orm": "~2.6",
 		"php-amqplib/rabbitmq-bundle": "~1.14",
