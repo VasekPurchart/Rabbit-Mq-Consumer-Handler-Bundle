@@ -201,7 +201,7 @@ Configuration
 Configuration structure with listed default values:
 
 ```yaml
-# app/config/config.yml
+# config/packages/rabbit_mq_consumer_handler.yml
 rabbit_mq_consumer_handler:
     # Generally how long is needed for the program to run, to be considered started,
     # achieved by sleeping when stopping prematurely
@@ -231,12 +231,9 @@ composer require vasek-purchart/rabbit-mq-consumer-handler-bundle
 
 Register the bundle in your application kernel:
 ```php
-// app/AppKernel.php
-public function registerBundles()
-{
-	return array(
-		// ...
-		new VasekPurchart\RabbitMqConsumerHandlerBundle\RabbitMqConsumerHandlerBundle(),
-	);
-}
+// config/bundles.php
+return [
+	// ...
+	VasekPurchart\RabbitMqConsumerHandlerBundle\RabbitMqConsumerHandlerBundle::class => ['all' => true],
+];
 ```
