@@ -14,12 +14,12 @@ use VasekPurchart\RabbitMqConsumerHandlerBundle\ConsumerHandler\ConsumerHandler;
 class ConsumerHandlerCompilerPassTest extends \Matthias\SymfonyDependencyInjectionTest\PhpUnit\AbstractCompilerPassTestCase
 {
 
-	protected function registerCompilerPass(ContainerBuilder $container)
+	protected function registerCompilerPass(ContainerBuilder $container): void
 	{
 		$container->addCompilerPass(new ConsumerHandlerCompilerPass());
 	}
 
-	protected function setUp()
+	protected function setUp(): void
 	{
 		parent::setUp();
 

@@ -85,7 +85,7 @@ class ConsumerHandlerTest extends \PHPUnit\Framework\TestCase
 		);
 
 		$this->assertSame(ConsumerInterface::MSG_REJECT_REQUEUE, $consumerHandler->processMessage(
-			function () use ($exception): int {
+			function () use ($exception): void {
 				throw $exception;
 			}
 		));
@@ -184,7 +184,7 @@ class ConsumerHandlerTest extends \PHPUnit\Framework\TestCase
 			$sleeper
 		);
 
-		$consumerHandler->processMessage(function (): int {
+		$consumerHandler->processMessage(function (): void {
 			throw new \Exception('Test');
 		});
 	}
@@ -245,7 +245,7 @@ class ConsumerHandlerTest extends \PHPUnit\Framework\TestCase
 		);
 
 		$this->assertSame(ConsumerInterface::MSG_REJECT_REQUEUE, $consumerHandler->processMessage(
-			function (): int {
+			function (): void {
 				throw new \Exception('Test');
 			}
 		));

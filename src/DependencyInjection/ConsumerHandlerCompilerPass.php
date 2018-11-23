@@ -22,7 +22,7 @@ class ConsumerHandlerCompilerPass extends \Consistence\ObjectPrototype implement
 
 	private const CONSUMER_HANDLER_SERVICE_ID_PATTERN = 'vasek_purchart.rabbit_mq_consumer_handler.consumer_handler.id.%s';
 
-	public function process(ContainerBuilder $container)
+	public function process(ContainerBuilder $container): void
 	{
 		$customConsumerConfigurations = $container->getParameter(RabbitMqConsumerHandlerExtension::CONTAINER_PARAMETER_CUSTOM_CONSUMER_CONFIGURATIONS);
 
