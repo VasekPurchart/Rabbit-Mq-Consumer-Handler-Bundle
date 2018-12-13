@@ -17,7 +17,7 @@ class ConsumerHandlerCompilerPass extends \Consistence\ObjectPrototype implement
 {
 
 	public const RABBIT_MQ_EXTENSION_CONSUMER_TAG = 'old_sound_rabbit_mq.consumer';
-	private const RABBIT_MQ_EXTENSION_CONSUMER_ID_PATTERN = '~^old_sound_rabbit_mq.(?P<' . self::RABBIT_MQ_EXTENSION_CONSUMER_ID_PATTERN_CONSUMER_NAME . '>.+)_consumer$~';
+	private const RABBIT_MQ_EXTENSION_CONSUMER_ID_PATTERN = '~^old_sound_rabbit_mq.(?P<' . self::RABBIT_MQ_EXTENSION_CONSUMER_ID_PATTERN_CONSUMER_NAME . '>.+)_(consumer|dynamic)$~';
 	private const RABBIT_MQ_EXTENSION_CONSUMER_ID_PATTERN_CONSUMER_NAME = 'consumerName';
 
 	private const CONSUMER_HANDLER_SERVICE_ID_PATTERN = 'vasek_purchart.rabbit_mq_consumer_handler.consumer_handler.id.%s';
