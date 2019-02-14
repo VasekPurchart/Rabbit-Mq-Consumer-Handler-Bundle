@@ -50,10 +50,10 @@ class ExampleConsumer implements \OldSound\RabbitMqBundle\RabbitMq\ConsumerInter
 		$this->consumerHandler = $consumerHandler;
 	}
 
-	public function execute(AMQPMessage $msg): int
+	public function execute(AMQPMessage $message): int
 	{
-		return $this->consumerHandler->processMessage(function () use ($msg): int {
-			$data = $msg->body;
+		return $this->consumerHandler->processMessage(function () use ($message): int {
+			$data = $message->body;
 
 			// do your magic with $data, basically anything you would put in the consumer
 			// without this bundle, apart from the stuff this bundle handles automatically 
@@ -121,15 +121,15 @@ class ExampleConsumer implements \OldSound\RabbitMqBundle\RabbitMq\ConsumerInter
 		$this->consumerHandler = $consumerHandler;
 	}
 
-	public function execute(AMQPMessage $msg): int
+	public function execute(AMQPMessage $message): int
 	{
 		return $this->consumerHandler->processMessage(
-			function (ConsumerHandler $consumerHandler) use ($msg): int {
+			function (ConsumerHandler $consumerHandler) use ($message): int {
 				// the correct ConsumerHandler is passed into the callback,
 				// so you can use it for custom logging etc
 
 				try {
-					$data = $msg->body;
+					$data = $message->body;
 
 					// ... 
 
