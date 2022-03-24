@@ -173,7 +173,9 @@ class RabbitMqConsumerHandlerExtensionTest extends \Matthias\SymfonyDependencyIn
 		);
 		$customConsumerConfigurations = $this->container->getParameter(RabbitMqConsumerHandlerExtension::CONTAINER_PARAMETER_CUSTOM_CONSUMER_CONFIGURATIONS);
 		$this->assertArrayHasKey('my_consumer', $customConsumerConfigurations);
-		$this->assertArraySubset($customConfiguration, $customConsumerConfigurations['my_consumer']);
+
+		$this->assertArrayHasKey('stop_consumer_sleep_seconds', $customConsumerConfigurations['my_consumer']);
+		$this->assertSame(3, $customConsumerConfigurations['my_consumer']['stop_consumer_sleep_seconds']);
 
 		$this->compile();
 	}
