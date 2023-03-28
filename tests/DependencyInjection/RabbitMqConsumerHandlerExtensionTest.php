@@ -25,11 +25,11 @@ class RabbitMqConsumerHandlerExtensionTest extends \Matthias\SymfonyDependencyIn
 	 */
 	public function defaultConfigurationValuesDataProvider(): Generator
 	{
-		yield [
+		yield 'stop_consumer_sleep_seconds' => [
 			'parameterName' => RabbitMqConsumerHandlerExtension::CONTAINER_PARAMETER_STOP_CONSUMER_SLEEP_SECONDS,
 			'parameterValue' => 1,
 		];
-		yield [
+		yield 'entity_manager.clear' => [
 			'parameterName' => RabbitMqConsumerHandlerExtension::CONTAINER_PARAMETER_ENTITY_MANAGER_CLEAR,
 			'parameterValue' => true,
 		];
@@ -55,11 +55,11 @@ class RabbitMqConsumerHandlerExtensionTest extends \Matthias\SymfonyDependencyIn
 	 */
 	public function defaultConfigurationServiceAliasesDataProvider(): Generator
 	{
-		yield [
+		yield 'logger' => [
 			'aliasName' => RabbitMqConsumerHandlerExtension::CONTAINER_SERVICE_LOGGER,
 			'targetServiceId' => 'logger',
 		];
-		yield [
+		yield 'entity_manager' => [
 			'aliasName' => RabbitMqConsumerHandlerExtension::CONTAINER_SERVICE_ENTITY_MANAGER,
 			'targetServiceId' => 'doctrine.orm.default_entity_manager',
 		];

@@ -21,16 +21,16 @@ class ConsumerHandlerTest extends \PHPUnit\Framework\TestCase
 	 */
 	public function resultCodeDataProvider(): Generator
 	{
-		yield [
+		yield 'MSG_ACK' => [
 			'code' => ConsumerInterface::MSG_ACK,
 		];
-		yield [
+		yield 'MSG_REJECT' => [
 			'code' => ConsumerInterface::MSG_REJECT,
 		];
-		yield [
+		yield 'MSG_REJECT_REQUEUE' => [
 			'code' => ConsumerInterface::MSG_REJECT_REQUEUE,
 		];
-		yield [
+		yield 'MSG_SINGLE_NACK_REQUEUE' => [
 			'code' => ConsumerInterface::MSG_SINGLE_NACK_REQUEUE,
 		];
 	}
