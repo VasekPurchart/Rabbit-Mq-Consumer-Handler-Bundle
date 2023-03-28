@@ -23,36 +23,6 @@ class RabbitMqConsumerHandlerExtensionTest extends \Matthias\SymfonyDependencyIn
 	/**
 	 * @return mixed[][]|\Generator
 	 */
-	public function defaultConfigurationServiceAliasesDataProvider(): Generator
-	{
-		yield 'logger' => [
-			'aliasName' => RabbitMqConsumerHandlerExtension::CONTAINER_SERVICE_LOGGER,
-			'targetServiceId' => 'logger',
-		];
-		yield 'entity_manager' => [
-			'aliasName' => RabbitMqConsumerHandlerExtension::CONTAINER_SERVICE_ENTITY_MANAGER,
-			'targetServiceId' => 'doctrine.orm.default_entity_manager',
-		];
-	}
-
-	/**
-	 * @dataProvider defaultConfigurationServiceAliasesDataProvider
-	 *
-	 * @param string $aliasName
-	 * @param string $targetServiceId
-	 */
-	public function testDefaultConfigurationServices(string $aliasName, string $targetServiceId): void
-	{
-		$this->load();
-
-		$this->assertContainerBuilderHasAlias($aliasName, $targetServiceId);
-
-		$this->compile();
-	}
-
-	/**
-	 * @return mixed[][]|\Generator
-	 */
 	public function configureContainerParameterDataProvider(): Generator
 	{
 		yield 'default stop_consumer_sleep_seconds value' => [
@@ -117,33 +87,62 @@ class RabbitMqConsumerHandlerExtensionTest extends \Matthias\SymfonyDependencyIn
 		$this->compile();
 	}
 
-	public function testConfigureCustomLoggerInstance(): void
+	/**
+	 * @return mixed[][]|\Generator
+	 */
+	public function configureContainerServiceAliasDataProvider(): Generator
 	{
-		$this->load([
-			'logger' => [
-				'service_id' => 'my_logger',
+		yield 'default logger' => [
+			'configuration' => [],
+			'aliasId' => RabbitMqConsumerHandlerExtension::CONTAINER_SERVICE_LOGGER,
+			'expectedServiceId' => 'logger',
+		];
+
+		yield 'default entity manager' => [
+			'configuration' => [],
+			'aliasId' => RabbitMqConsumerHandlerExtension::CONTAINER_SERVICE_ENTITY_MANAGER,
+			'expectedServiceId' => 'doctrine.orm.default_entity_manager',
+		];
+
+		yield 'configure custom logger instance' => [
+			'configuration' => [
+				'logger' => [
+					'service_id' => 'my_logger',
+				],
 			],
-		]);
+			'aliasId' => RabbitMqConsumerHandlerExtension::CONTAINER_SERVICE_LOGGER,
+			'expectedServiceId' => 'my_logger',
+		];
 
-		$this->assertContainerBuilderHasAlias(
-			RabbitMqConsumerHandlerExtension::CONTAINER_SERVICE_LOGGER,
-			'my_logger'
-		);
-
-		$this->compile();
+		yield 'configure custom entity manager instance' => [
+			'configuration' => [
+				'entity_manager' => [
+					'service_id' => 'my_entity_manager',
+				],
+			],
+			'aliasId' => RabbitMqConsumerHandlerExtension::CONTAINER_SERVICE_ENTITY_MANAGER,
+			'expectedServiceId' => 'my_entity_manager',
+		];
 	}
 
-	public function testConfigureCustomEntityManagerInstance(): void
+	/**
+	 * @dataProvider configureContainerServiceAliasDataProvider
+	 *
+	 * @param mixed[][] $configuration
+	 * @param string $aliasId
+	 * @param string $expectedServiceId
+	 */
+	public function testConfigureContainerService(
+		array $configuration,
+		string $aliasId,
+		string $expectedServiceId
+	): void
 	{
-		$this->load([
-			'entity_manager' => [
-				'service_id' => 'my_entity_manager',
-			],
-		]);
+		$this->load($configuration);
 
 		$this->assertContainerBuilderHasAlias(
-			RabbitMqConsumerHandlerExtension::CONTAINER_SERVICE_ENTITY_MANAGER,
-			'my_entity_manager'
+			$aliasId,
+			$expectedServiceId
 		);
 
 		$this->compile();
