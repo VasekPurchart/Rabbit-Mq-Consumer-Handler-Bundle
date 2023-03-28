@@ -5,6 +5,7 @@ declare(strict_types = 1);
 namespace VasekPurchart\RabbitMqConsumerHandlerBundle\ConsumerHandler;
 
 use Doctrine\ORM\EntityManager;
+use Generator;
 use OldSound\RabbitMqBundle\RabbitMq\ConsumerInterface;
 use OldSound\RabbitMqBundle\RabbitMq\DequeuerInterface;
 use PHPUnit\Framework\Assert;
@@ -16,16 +17,14 @@ class ConsumerHandlerTest extends \PHPUnit\Framework\TestCase
 {
 
 	/**
-	 * @return int[][]
+	 * @return int[][]|\Generator
 	 */
-	public function resultCodeDataProvider(): array
+	public function resultCodeDataProvider(): Generator
 	{
-		return [
-			[ConsumerInterface::MSG_ACK],
-			[ConsumerInterface::MSG_REJECT],
-			[ConsumerInterface::MSG_REJECT_REQUEUE],
-			[ConsumerInterface::MSG_SINGLE_NACK_REQUEUE],
-		];
+		yield [ConsumerInterface::MSG_ACK];
+		yield [ConsumerInterface::MSG_REJECT];
+		yield [ConsumerInterface::MSG_REJECT_REQUEUE];
+		yield [ConsumerInterface::MSG_SINGLE_NACK_REQUEUE];
 	}
 
 	/**
