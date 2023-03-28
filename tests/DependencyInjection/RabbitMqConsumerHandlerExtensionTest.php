@@ -22,7 +22,7 @@ class RabbitMqConsumerHandlerExtensionTest extends \Matthias\SymfonyDependencyIn
 	/**
 	 * @return mixed[][]
 	 */
-	public function defaultConfigurationValuesProvider(): array
+	public function defaultConfigurationValuesDataProvider(): array
 	{
 		return [
 			[
@@ -37,7 +37,7 @@ class RabbitMqConsumerHandlerExtensionTest extends \Matthias\SymfonyDependencyIn
 	}
 
 	/**
-	 * @dataProvider defaultConfigurationValuesProvider
+	 * @dataProvider defaultConfigurationValuesDataProvider
 	 *
 	 * @param string $parameterName
 	 * @param mixed $parameterValue
@@ -54,7 +54,7 @@ class RabbitMqConsumerHandlerExtensionTest extends \Matthias\SymfonyDependencyIn
 	/**
 	 * @return mixed[][]
 	 */
-	public function defaultConfigurationServiceAliasesProvider(): array
+	public function defaultConfigurationServiceAliasesDataProvider(): array
 	{
 		return [
 			[
@@ -69,7 +69,7 @@ class RabbitMqConsumerHandlerExtensionTest extends \Matthias\SymfonyDependencyIn
 	}
 
 	/**
-	 * @dataProvider defaultConfigurationServiceAliasesProvider
+	 * @dataProvider defaultConfigurationServiceAliasesDataProvider
 	 *
 	 * @param string $aliasName
 	 * @param string $targetServiceId

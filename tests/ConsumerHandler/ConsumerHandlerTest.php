@@ -18,7 +18,7 @@ class ConsumerHandlerTest extends \PHPUnit\Framework\TestCase
 	/**
 	 * @return int[][]
 	 */
-	public function resultCodeProvider(): array
+	public function resultCodeDataProvider(): array
 	{
 		return [
 			[ConsumerInterface::MSG_ACK],
@@ -29,7 +29,7 @@ class ConsumerHandlerTest extends \PHPUnit\Framework\TestCase
 	}
 
 	/**
-	 * @dataProvider resultCodeProvider
+	 * @dataProvider resultCodeDataProvider
 	 *
 	 * @param int $code
 	 */
