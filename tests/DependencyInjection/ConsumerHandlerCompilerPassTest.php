@@ -199,7 +199,7 @@ class ConsumerHandlerCompilerPassTest extends \Matthias\SymfonyDependencyInjecti
 		try {
 			$this->compile();
 
-			Assert::fail('Exception expected, should not be reached');
+			Assert::fail('Exception expected');
 
 		} catch (\VasekPurchart\RabbitMqConsumerHandlerBundle\DependencyInjection\UnusedConsumerConfigurationException $e) {
 			Assert::assertContains('my_consumer_xxx', $e->getConsumerNames());
