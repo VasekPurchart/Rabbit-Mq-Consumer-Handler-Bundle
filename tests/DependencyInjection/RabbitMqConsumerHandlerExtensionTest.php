@@ -4,6 +4,8 @@ declare(strict_types = 1);
 
 namespace VasekPurchart\RabbitMqConsumerHandlerBundle\DependencyInjection;
 
+use PHPUnit\Framework\Assert;
+
 class RabbitMqConsumerHandlerExtensionTest extends \Matthias\SymfonyDependencyInjectionTest\PhpUnit\AbstractExtensionTestCase
 {
 
@@ -172,10 +174,10 @@ class RabbitMqConsumerHandlerExtensionTest extends \Matthias\SymfonyDependencyIn
 			RabbitMqConsumerHandlerExtension::CONTAINER_PARAMETER_CUSTOM_CONSUMER_CONFIGURATIONS
 		);
 		$customConsumerConfigurations = $this->container->getParameter(RabbitMqConsumerHandlerExtension::CONTAINER_PARAMETER_CUSTOM_CONSUMER_CONFIGURATIONS);
-		$this->assertArrayHasKey('my_consumer', $customConsumerConfigurations);
+		Assert::assertArrayHasKey('my_consumer', $customConsumerConfigurations);
 
-		$this->assertArrayHasKey('stop_consumer_sleep_seconds', $customConsumerConfigurations['my_consumer']);
-		$this->assertSame(3, $customConsumerConfigurations['my_consumer']['stop_consumer_sleep_seconds']);
+		Assert::assertArrayHasKey('stop_consumer_sleep_seconds', $customConsumerConfigurations['my_consumer']);
+		Assert::assertSame(3, $customConsumerConfigurations['my_consumer']['stop_consumer_sleep_seconds']);
 
 		$this->compile();
 	}

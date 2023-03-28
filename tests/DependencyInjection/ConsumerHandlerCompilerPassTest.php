@@ -5,6 +5,7 @@ declare(strict_types = 1);
 namespace VasekPurchart\RabbitMqConsumerHandlerBundle\DependencyInjection;
 
 use OldSound\RabbitMqBundle\RabbitMq\Consumer;
+use PHPUnit\Framework\Assert;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\Parameter;
@@ -46,8 +47,8 @@ class ConsumerHandlerCompilerPassTest extends \Matthias\SymfonyDependencyInjecti
 		$dequeuerArgument = $this->container->findDefinition(
 			'vasek_purchart.rabbit_mq_consumer_handler.consumer_handler.id.my_consumer_name'
 		)->getArgument('$dequeuer');
-		$this->assertInstanceOf(Reference::class, $dequeuerArgument);
-		$this->assertSame(
+		Assert::assertInstanceOf(Reference::class, $dequeuerArgument);
+		Assert::assertSame(
 			$consumerServiceId,
 			$dequeuerArgument->__toString()
 		);
@@ -91,8 +92,8 @@ class ConsumerHandlerCompilerPassTest extends \Matthias\SymfonyDependencyInjecti
 		$stopConsumerSleepSeconds = $this->container->findDefinition(
 			'vasek_purchart.rabbit_mq_consumer_handler.consumer_handler.id.default_configuration'
 		)->getArgument('$stopConsumerSleepSeconds');
-		$this->assertInstanceOf(Parameter::class, $stopConsumerSleepSeconds);
-		$this->assertSame(
+		Assert::assertInstanceOf(Parameter::class, $stopConsumerSleepSeconds);
+		Assert::assertSame(
 			RabbitMqConsumerHandlerExtension::CONTAINER_PARAMETER_STOP_CONSUMER_SLEEP_SECONDS,
 			$stopConsumerSleepSeconds->__toString()
 		);
@@ -103,7 +104,7 @@ class ConsumerHandlerCompilerPassTest extends \Matthias\SymfonyDependencyInjecti
 		$stopConsumerSleepSeconds = $this->container->findDefinition(
 			'vasek_purchart.rabbit_mq_consumer_handler.consumer_handler.id.custom_configuration'
 		)->getArgument('$stopConsumerSleepSeconds');
-		$this->assertSame(
+		Assert::assertSame(
 			3,
 			$stopConsumerSleepSeconds
 		);
@@ -115,8 +116,8 @@ class ConsumerHandlerCompilerPassTest extends \Matthias\SymfonyDependencyInjecti
 		$logger = $this->container->findDefinition(
 			'vasek_purchart.rabbit_mq_consumer_handler.consumer_handler.id.default_configuration'
 		)->getArgument('$logger');
-		$this->assertInstanceOf(Reference::class, $logger);
-		$this->assertSame(
+		Assert::assertInstanceOf(Reference::class, $logger);
+		Assert::assertSame(
 			RabbitMqConsumerHandlerExtension::CONTAINER_SERVICE_LOGGER,
 			$logger->__toString()
 		);
@@ -127,8 +128,8 @@ class ConsumerHandlerCompilerPassTest extends \Matthias\SymfonyDependencyInjecti
 		$logger = $this->container->findDefinition(
 			'vasek_purchart.rabbit_mq_consumer_handler.consumer_handler.id.custom_configuration'
 		)->getArgument('$logger');
-		$this->assertInstanceOf(Reference::class, $logger);
-		$this->assertSame(
+		Assert::assertInstanceOf(Reference::class, $logger);
+		Assert::assertSame(
 			'my_custom_logger',
 			$logger->__toString()
 		);
@@ -140,8 +141,8 @@ class ConsumerHandlerCompilerPassTest extends \Matthias\SymfonyDependencyInjecti
 		$entityManager = $this->container->findDefinition(
 			'vasek_purchart.rabbit_mq_consumer_handler.consumer_handler.id.default_configuration'
 		)->getArgument('$entityManager');
-		$this->assertInstanceOf(Reference::class, $entityManager);
-		$this->assertSame(
+		Assert::assertInstanceOf(Reference::class, $entityManager);
+		Assert::assertSame(
 			RabbitMqConsumerHandlerExtension::CONTAINER_SERVICE_ENTITY_MANAGER,
 			$entityManager->__toString()
 		);
@@ -152,8 +153,8 @@ class ConsumerHandlerCompilerPassTest extends \Matthias\SymfonyDependencyInjecti
 		$entityManager = $this->container->findDefinition(
 			'vasek_purchart.rabbit_mq_consumer_handler.consumer_handler.id.custom_configuration'
 		)->getArgument('$entityManager');
-		$this->assertInstanceOf(Reference::class, $entityManager);
-		$this->assertSame(
+		Assert::assertInstanceOf(Reference::class, $entityManager);
+		Assert::assertSame(
 			'my_custom_entity_manager',
 			$entityManager->__toString()
 		);
@@ -165,8 +166,8 @@ class ConsumerHandlerCompilerPassTest extends \Matthias\SymfonyDependencyInjecti
 		$clearEntityManager = $this->container->findDefinition(
 			'vasek_purchart.rabbit_mq_consumer_handler.consumer_handler.id.default_configuration'
 		)->getArgument('$clearEntityManager');
-		$this->assertInstanceOf(Parameter::class, $clearEntityManager);
-		$this->assertSame(
+		Assert::assertInstanceOf(Parameter::class, $clearEntityManager);
+		Assert::assertSame(
 			RabbitMqConsumerHandlerExtension::CONTAINER_PARAMETER_ENTITY_MANAGER_CLEAR,
 			$clearEntityManager->__toString()
 		);
@@ -177,7 +178,7 @@ class ConsumerHandlerCompilerPassTest extends \Matthias\SymfonyDependencyInjecti
 		$clearEntityManager = $this->container->findDefinition(
 			'vasek_purchart.rabbit_mq_consumer_handler.consumer_handler.id.custom_configuration'
 		)->getArgument('$clearEntityManager');
-		$this->assertSame(
+		Assert::assertSame(
 			false,
 			$clearEntityManager
 		);
@@ -198,10 +199,10 @@ class ConsumerHandlerCompilerPassTest extends \Matthias\SymfonyDependencyInjecti
 		try {
 			$this->compile();
 
-			$this->fail('Exception expected, should not be reached');
+			Assert::fail('Exception expected, should not be reached');
 
 		} catch (\VasekPurchart\RabbitMqConsumerHandlerBundle\DependencyInjection\UnusedConsumerConfigurationException $e) {
-			$this->assertContains('my_consumer_xxx', $e->getConsumerNames());
+			Assert::assertContains('my_consumer_xxx', $e->getConsumerNames());
 		}
 	}
 
