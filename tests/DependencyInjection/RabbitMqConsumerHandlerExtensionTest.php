@@ -23,36 +23,6 @@ class RabbitMqConsumerHandlerExtensionTest extends \Matthias\SymfonyDependencyIn
 	/**
 	 * @return mixed[][]|\Generator
 	 */
-	public function defaultConfigurationValuesDataProvider(): Generator
-	{
-		yield 'stop_consumer_sleep_seconds' => [
-			'parameterName' => RabbitMqConsumerHandlerExtension::CONTAINER_PARAMETER_STOP_CONSUMER_SLEEP_SECONDS,
-			'parameterValue' => 1,
-		];
-		yield 'entity_manager.clear' => [
-			'parameterName' => RabbitMqConsumerHandlerExtension::CONTAINER_PARAMETER_ENTITY_MANAGER_CLEAR,
-			'parameterValue' => true,
-		];
-	}
-
-	/**
-	 * @dataProvider defaultConfigurationValuesDataProvider
-	 *
-	 * @param string $parameterName
-	 * @param mixed $parameterValue
-	 */
-	public function testDefaultConfigurationValues(string $parameterName, $parameterValue): void
-	{
-		$this->load();
-
-		$this->assertContainerBuilderHasParameter($parameterName, $parameterValue);
-
-		$this->compile();
-	}
-
-	/**
-	 * @return mixed[][]|\Generator
-	 */
 	public function defaultConfigurationServiceAliasesDataProvider(): Generator
 	{
 		yield 'logger' => [
@@ -80,29 +50,68 @@ class RabbitMqConsumerHandlerExtensionTest extends \Matthias\SymfonyDependencyIn
 		$this->compile();
 	}
 
-	public function testConfigureStopConsumerSleepSeconds(): void
+	/**
+	 * @return mixed[][]|\Generator
+	 */
+	public function configureContainerParameterDataProvider(): Generator
 	{
-		$this->load([
-			'stop_consumer_sleep_seconds' => 2,
-		]);
+		yield 'default stop_consumer_sleep_seconds value' => [
+			'configuration' => [],
+			'parameterName' => RabbitMqConsumerHandlerExtension::CONTAINER_PARAMETER_STOP_CONSUMER_SLEEP_SECONDS,
+			'expectedParameterValue' => 1,
+		];
 
-		$this->assertContainerBuilderHasParameter(
-			RabbitMqConsumerHandlerExtension::CONTAINER_PARAMETER_STOP_CONSUMER_SLEEP_SECONDS,
-			2
-		);
+		yield 'default entity_manager.clear value' => [
+			'configuration' => [],
+			'parameterName' => RabbitMqConsumerHandlerExtension::CONTAINER_PARAMETER_ENTITY_MANAGER_CLEAR,
+			'expectedParameterValue' => true,
+		];
 
-		$this->compile();
+		yield 'set stop_consumer_sleep_seconds' => [
+			'configuration' => [
+				'stop_consumer_sleep_seconds' => 2,
+			],
+			'parameterName' => RabbitMqConsumerHandlerExtension::CONTAINER_PARAMETER_STOP_CONSUMER_SLEEP_SECONDS,
+			'expectedParameterValue' => 2,
+		];
+
+		yield 'disable stop_consumer_sleep_seconds' => [
+			'configuration' => [
+				'stop_consumer_sleep_seconds' => false,
+			],
+			'parameterName' => RabbitMqConsumerHandlerExtension::CONTAINER_PARAMETER_STOP_CONSUMER_SLEEP_SECONDS,
+			'expectedParameterValue' => 0,
+		];
+
+		yield 'disable entity_manager.clear' => [
+			'configuration' => [
+				'entity_manager' => [
+					'clear_em_before_message' => false,
+				],
+			],
+			'parameterName' => RabbitMqConsumerHandlerExtension::CONTAINER_PARAMETER_ENTITY_MANAGER_CLEAR,
+			'expectedParameterValue' => false,
+		];
 	}
 
-	public function testDisableStopConsumerSleepSeconds(): void
+	/**
+	 * @dataProvider configureContainerParameterDataProvider
+	 *
+	 * @param mixed[][] $configuration
+	 * @param string $parameterName
+	 * @param mixed $expectedParameterValue
+	 */
+	public function testConfigureContainerParameter(
+		array $configuration,
+		string $parameterName,
+		$expectedParameterValue
+	): void
 	{
-		$this->load([
-			'stop_consumer_sleep_seconds' => false,
-		]);
+		$this->load($configuration);
 
 		$this->assertContainerBuilderHasParameter(
-			RabbitMqConsumerHandlerExtension::CONTAINER_PARAMETER_STOP_CONSUMER_SLEEP_SECONDS,
-			0
+			$parameterName,
+			$expectedParameterValue
 		);
 
 		$this->compile();
@@ -135,22 +144,6 @@ class RabbitMqConsumerHandlerExtensionTest extends \Matthias\SymfonyDependencyIn
 		$this->assertContainerBuilderHasAlias(
 			RabbitMqConsumerHandlerExtension::CONTAINER_SERVICE_ENTITY_MANAGER,
 			'my_entity_manager'
-		);
-
-		$this->compile();
-	}
-
-	public function testDisableEntityManagerClear(): void
-	{
-		$this->load([
-			'entity_manager' => [
-				'clear_em_before_message' => false,
-			],
-		]);
-
-		$this->assertContainerBuilderHasParameter(
-			RabbitMqConsumerHandlerExtension::CONTAINER_PARAMETER_ENTITY_MANAGER_CLEAR,
-			false
 		);
 
 		$this->compile();
