@@ -4,6 +4,7 @@ declare(strict_types = 1);
 
 namespace VasekPurchart\RabbitMqConsumerHandlerBundle\DependencyInjection;
 
+use Generator;
 use PHPUnit\Framework\Assert;
 
 class RabbitMqConsumerHandlerExtensionTest extends \Matthias\SymfonyDependencyInjectionTest\PhpUnit\AbstractExtensionTestCase
@@ -20,19 +21,17 @@ class RabbitMqConsumerHandlerExtensionTest extends \Matthias\SymfonyDependencyIn
 	}
 
 	/**
-	 * @return mixed[][]
+	 * @return mixed[][]|\Generator
 	 */
-	public function defaultConfigurationValuesDataProvider(): array
+	public function defaultConfigurationValuesDataProvider(): Generator
 	{
-		return [
-			[
-				RabbitMqConsumerHandlerExtension::CONTAINER_PARAMETER_STOP_CONSUMER_SLEEP_SECONDS,
-				1,
-			],
-			[
-				RabbitMqConsumerHandlerExtension::CONTAINER_PARAMETER_ENTITY_MANAGER_CLEAR,
-				true,
-			],
+		yield [
+			RabbitMqConsumerHandlerExtension::CONTAINER_PARAMETER_STOP_CONSUMER_SLEEP_SECONDS,
+			1,
+		];
+		yield [
+			RabbitMqConsumerHandlerExtension::CONTAINER_PARAMETER_ENTITY_MANAGER_CLEAR,
+			true,
 		];
 	}
 
@@ -52,19 +51,17 @@ class RabbitMqConsumerHandlerExtensionTest extends \Matthias\SymfonyDependencyIn
 	}
 
 	/**
-	 * @return mixed[][]
+	 * @return mixed[][]|\Generator
 	 */
-	public function defaultConfigurationServiceAliasesDataProvider(): array
+	public function defaultConfigurationServiceAliasesDataProvider(): Generator
 	{
-		return [
-			[
-				RabbitMqConsumerHandlerExtension::CONTAINER_SERVICE_LOGGER,
-				'logger',
-			],
-			[
-				RabbitMqConsumerHandlerExtension::CONTAINER_SERVICE_ENTITY_MANAGER,
-				'doctrine.orm.default_entity_manager',
-			],
+		yield [
+			RabbitMqConsumerHandlerExtension::CONTAINER_SERVICE_LOGGER,
+			'logger',
+		];
+		yield [
+			RabbitMqConsumerHandlerExtension::CONTAINER_SERVICE_ENTITY_MANAGER,
+			'doctrine.orm.default_entity_manager',
 		];
 	}
 
