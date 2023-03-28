@@ -7,6 +7,7 @@ namespace VasekPurchart\RabbitMqConsumerHandlerBundle\ConsumerHandler;
 use Doctrine\ORM\EntityManager;
 use OldSound\RabbitMqBundle\RabbitMq\ConsumerInterface;
 use OldSound\RabbitMqBundle\RabbitMq\DequeuerInterface;
+use PHPUnit\Framework\Assert;
 use Psr\Log\LogLevel;
 use Psr\Log\LoggerInterface;
 use VasekPurchart\RabbitMqConsumerHandlerBundle\Sleeper\Sleeper;
@@ -36,7 +37,7 @@ class ConsumerHandlerTest extends \PHPUnit\Framework\TestCase
 	{
 		$consumerHandler = $this->getConsumerHandlerForNoExpectedHandling();
 
-		$this->assertSame($code, $consumerHandler->processMessage(function () use ($code): int {
+		Assert::assertSame($code, $consumerHandler->processMessage(function () use ($code): int {
 			return $code;
 		}));
 	}
@@ -49,31 +50,31 @@ class ConsumerHandlerTest extends \PHPUnit\Framework\TestCase
 
 		$dequeuer = $this->getDequeuerMock();
 		$dequeuer
-			->expects($this->once())
+			->expects(self::once())
 			->method('forceStopConsumer');
 
 		$entityManager = $this->getOpenEntityManagerMock();
 
 		$logger = $this->getLoggerMock();
 		$logger
-			->expects($this->once())
+			->expects(self::once())
 			->method('error')
 			->with(
-				$this->stringContains('Test'),
-				$this->equalTo([
+				Assert::stringContains('Test'),
+				Assert::equalTo([
 					'exception' => $exception,
 				])
 			);
 		$logger
-			->expects($this->once())
+			->expects(self::once())
 			->method('log')
-			->with(LogLevel::WARNING, $this->stringContains('uncaught exception'));
+			->with(LogLevel::WARNING, Assert::stringContains('uncaught exception'));
 
 		$sleeper = $this->getSleeperMock();
 		$sleeper
-			->expects($this->once())
+			->expects(self::once())
 			->method('sleep')
-			->with($this->equalTo($stopConsumerSleepSeconds));
+			->with(Assert::equalTo($stopConsumerSleepSeconds));
 
 		$consumerHandler = new ConsumerHandler(
 			$stopConsumerSleepSeconds,
@@ -84,7 +85,7 @@ class ConsumerHandlerTest extends \PHPUnit\Framework\TestCase
 			$sleeper
 		);
 
-		$this->assertSame(ConsumerInterface::MSG_REJECT_REQUEUE, $consumerHandler->processMessage(
+		Assert::assertSame(ConsumerInterface::MSG_REJECT_REQUEUE, $consumerHandler->processMessage(
 			function () use ($exception): void {
 				throw $exception;
 			}
@@ -97,7 +98,7 @@ class ConsumerHandlerTest extends \PHPUnit\Framework\TestCase
 
 		$consumerHandler->processMessage(
 			function ($consumerHandler): int {
-				$this->assertInstanceOf(ConsumerHandler::class, $consumerHandler);
+				Assert::assertInstanceOf(ConsumerHandler::class, $consumerHandler);
 
 				return ConsumerInterface::MSG_ACK;
 			}
@@ -110,26 +111,26 @@ class ConsumerHandlerTest extends \PHPUnit\Framework\TestCase
 
 		$dequeuer = $this->getDequeuerMock();
 		$dequeuer
-			->expects($this->once())
+			->expects(self::once())
 			->method('forceStopConsumer');
 
 		$logger = $this->getLoggerMock();
 		$logger
-			->expects($this->once())
+			->expects(self::once())
 			->method('log')
-			->with(LogLevel::WARNING, $this->stringContains('EntityManager was closed'));
+			->with(LogLevel::WARNING, Assert::stringContains('EntityManager was closed'));
 
 		$entityManager = $this->getEntityManagerMock();
 		$entityManager
-			->expects($this->any())
+			->expects(self::any())
 			->method('isOpen')
-			->will($this->returnValue(false));
+			->will(self::returnValue(false));
 
 		$sleeper = $this->getSleeperMock();
 		$sleeper
-			->expects($this->once())
+			->expects(self::once())
 			->method('sleep')
-			->with($this->equalTo($stopConsumerSleepSeconds));
+			->with(Assert::equalTo($stopConsumerSleepSeconds));
 
 		$consumerHandler = new ConsumerHandler(
 			$stopConsumerSleepSeconds,
@@ -151,29 +152,29 @@ class ConsumerHandlerTest extends \PHPUnit\Framework\TestCase
 
 		$dequeuer = $this->getDequeuerMock();
 		$dequeuer
-			->expects($this->once())
+			->expects(self::once())
 			->method('forceStopConsumer');
 
 		$logger = $this->getLoggerMock();
 		$logger
-			->expects($this->once())
+			->expects(self::once())
 			->method('log')
-			->with(LogLevel::WARNING, $this->stringContains('uncaught exception'));
+			->with(LogLevel::WARNING, Assert::stringContains('uncaught exception'));
 		$logger
-			->expects($this->any())
+			->expects(self::any())
 			->method('error');
 
 		$entityManager = $this->getEntityManagerMock();
 		$entityManager
-			->expects($this->any())
+			->expects(self::any())
 			->method('isOpen')
-			->will($this->returnValue(false));
+			->will(self::returnValue(false));
 
 		$sleeper = $this->getSleeperMock();
 		$sleeper
-			->expects($this->once())
+			->expects(self::once())
 			->method('sleep')
-			->with($this->equalTo($stopConsumerSleepSeconds));
+			->with(Assert::equalTo($stopConsumerSleepSeconds));
 
 		$consumerHandler = new ConsumerHandler(
 			$stopConsumerSleepSeconds,
@@ -195,20 +196,20 @@ class ConsumerHandlerTest extends \PHPUnit\Framework\TestCase
 
 		$dequeuer = $this->getDequeuerMock();
 		$dequeuer
-			->expects($this->never())
-			->method($this->anything());
+			->expects(self::never())
+			->method(Assert::anything());
 
 		$logger = $this->getLoggerMock();
 		$logger
-			->expects($this->never())
-			->method($this->anything());
+			->expects(self::never())
+			->method(Assert::anything());
 
 		$entityManager = $this->getOpenEntityManagerMock();
 
 		$sleeper = $this->getSleeperMock();
 		$sleeper
-			->expects($this->never())
-			->method($this->anything());
+			->expects(self::never())
+			->method(Assert::anything());
 
 		return new ConsumerHandler(
 			$stopConsumerSleepSeconds,
@@ -232,8 +233,8 @@ class ConsumerHandlerTest extends \PHPUnit\Framework\TestCase
 
 		$sleeper = $this->getSleeperMock();
 		$sleeper
-			->expects($this->never())
-			->method($this->anything());
+			->expects(self::never())
+			->method(Assert::anything());
 
 		$consumerHandler = new ConsumerHandler(
 			$stopConsumerSleepSeconds,
@@ -244,7 +245,7 @@ class ConsumerHandlerTest extends \PHPUnit\Framework\TestCase
 			$sleeper
 		);
 
-		$this->assertSame(ConsumerInterface::MSG_REJECT_REQUEUE, $consumerHandler->processMessage(
+		Assert::assertSame(ConsumerInterface::MSG_REJECT_REQUEUE, $consumerHandler->processMessage(
 			function (): void {
 				throw new \Exception('Test');
 			}
@@ -257,23 +258,23 @@ class ConsumerHandlerTest extends \PHPUnit\Framework\TestCase
 
 		$dequeuer = $this->getDequeuerMock();
 		$dequeuer
-			->expects($this->never())
-			->method($this->anything());
+			->expects(self::never())
+			->method(Assert::anything());
 
 		$logger = $this->getLoggerMock();
 		$logger
-			->expects($this->never())
-			->method($this->anything());
+			->expects(self::never())
+			->method(Assert::anything());
 
 		$entityManager = $this->getOpenEntityManagerMock();
 		$entityManager
-			->expects($this->once())
+			->expects(self::once())
 			->method('clear');
 
 		$sleeper = $this->getSleeperMock();
 		$sleeper
-			->expects($this->never())
-			->method($this->anything());
+			->expects(self::never())
+			->method(Assert::anything());
 
 		$consumerHandler = new ConsumerHandler(
 			$stopConsumerSleepSeconds,
@@ -297,23 +298,23 @@ class ConsumerHandlerTest extends \PHPUnit\Framework\TestCase
 
 		$dequeuer = $this->getDequeuerMock();
 		$dequeuer
-			->expects($this->never())
-			->method($this->anything());
+			->expects(self::never())
+			->method(Assert::anything());
 
 		$logger = $this->getLoggerMock();
 		$logger
-			->expects($this->never())
-			->method($this->anything());
+			->expects(self::never())
+			->method(Assert::anything());
 
 		$entityManager = $this->getOpenEntityManagerMock();
 		$entityManager
-			->expects($this->never())
+			->expects(self::never())
 			->method('clear');
 
 		$sleeper = $this->getSleeperMock();
 		$sleeper
-			->expects($this->never())
-			->method($this->anything());
+			->expects(self::never())
+			->method(Assert::anything());
 
 		$consumerHandler = new ConsumerHandler(
 			$stopConsumerSleepSeconds,
@@ -370,9 +371,9 @@ class ConsumerHandlerTest extends \PHPUnit\Framework\TestCase
 	{
 		$entityManager = $this->getEntityManagerMock();
 		$entityManager
-			->expects($this->any())
+			->expects(self::any())
 			->method('isOpen')
-			->will($this->returnValue(true));
+			->will(self::returnValue(true));
 
 		return $entityManager;
 	}
