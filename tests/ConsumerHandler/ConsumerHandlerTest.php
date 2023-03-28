@@ -55,14 +55,18 @@ class ConsumerHandlerTest extends \PHPUnit\Framework\TestCase
 
 		$stopConsumerSleepSeconds = 2;
 
-		$dequeuer = $this->getDequeuerMock();
+		$dequeuer = $this->createMock(DequeuerInterface::class);
 		$dequeuer
 			->expects(self::once())
 			->method('forceStopConsumer');
 
-		$entityManager = $this->getOpenEntityManagerMock();
+		$entityManager = $this->createMock(EntityManager::class);
+		$entityManager
+			->expects(self::any())
+			->method('isOpen')
+			->will(self::returnValue(true));
 
-		$logger = $this->getLoggerMock();
+		$logger = $this->createMock(LoggerInterface::class);
 		$logger
 			->expects(self::once())
 			->method('error')
@@ -77,7 +81,7 @@ class ConsumerHandlerTest extends \PHPUnit\Framework\TestCase
 			->method('log')
 			->with(LogLevel::WARNING, Assert::stringContains('uncaught exception'));
 
-		$sleeper = $this->getSleeperMock();
+		$sleeper = $this->createMock(Sleeper::class);
 		$sleeper
 			->expects(self::once())
 			->method('sleep')
@@ -116,24 +120,24 @@ class ConsumerHandlerTest extends \PHPUnit\Framework\TestCase
 	{
 		$stopConsumerSleepSeconds = 2;
 
-		$dequeuer = $this->getDequeuerMock();
+		$dequeuer = $this->createMock(DequeuerInterface::class);
 		$dequeuer
 			->expects(self::once())
 			->method('forceStopConsumer');
 
-		$logger = $this->getLoggerMock();
+		$logger = $this->createMock(LoggerInterface::class);
 		$logger
 			->expects(self::once())
 			->method('log')
 			->with(LogLevel::WARNING, Assert::stringContains('EntityManager was closed'));
 
-		$entityManager = $this->getEntityManagerMock();
+		$entityManager = $this->createMock(EntityManager::class);
 		$entityManager
 			->expects(self::any())
 			->method('isOpen')
 			->will(self::returnValue(false));
 
-		$sleeper = $this->getSleeperMock();
+		$sleeper = $this->createMock(Sleeper::class);
 		$sleeper
 			->expects(self::once())
 			->method('sleep')
@@ -157,12 +161,12 @@ class ConsumerHandlerTest extends \PHPUnit\Framework\TestCase
 	{
 		$stopConsumerSleepSeconds = 2;
 
-		$dequeuer = $this->getDequeuerMock();
+		$dequeuer = $this->createMock(DequeuerInterface::class);
 		$dequeuer
 			->expects(self::once())
 			->method('forceStopConsumer');
 
-		$logger = $this->getLoggerMock();
+		$logger = $this->createMock(LoggerInterface::class);
 		$logger
 			->expects(self::once())
 			->method('log')
@@ -171,13 +175,13 @@ class ConsumerHandlerTest extends \PHPUnit\Framework\TestCase
 			->expects(self::any())
 			->method('error');
 
-		$entityManager = $this->getEntityManagerMock();
+		$entityManager = $this->createMock(EntityManager::class);
 		$entityManager
 			->expects(self::any())
 			->method('isOpen')
 			->will(self::returnValue(false));
 
-		$sleeper = $this->getSleeperMock();
+		$sleeper = $this->createMock(Sleeper::class);
 		$sleeper
 			->expects(self::once())
 			->method('sleep')
@@ -201,19 +205,23 @@ class ConsumerHandlerTest extends \PHPUnit\Framework\TestCase
 	{
 		$stopConsumerSleepSeconds = 2;
 
-		$dequeuer = $this->getDequeuerMock();
+		$dequeuer = $this->createMock(DequeuerInterface::class);
 		$dequeuer
 			->expects(self::never())
 			->method(Assert::anything());
 
-		$logger = $this->getLoggerMock();
+		$logger = $this->createMock(LoggerInterface::class);
 		$logger
 			->expects(self::never())
 			->method(Assert::anything());
 
-		$entityManager = $this->getOpenEntityManagerMock();
+		$entityManager = $this->createMock(EntityManager::class);
+		$entityManager
+			->expects(self::any())
+			->method('isOpen')
+			->will(self::returnValue(true));
 
-		$sleeper = $this->getSleeperMock();
+		$sleeper = $this->createMock(Sleeper::class);
 		$sleeper
 			->expects(self::never())
 			->method(Assert::anything());
@@ -232,13 +240,17 @@ class ConsumerHandlerTest extends \PHPUnit\Framework\TestCase
 	{
 		$stopConsumerSleepSeconds = 0;
 
-		$dequeuer = $this->getDequeuerMock();
+		$dequeuer = $this->createMock(DequeuerInterface::class);
 
-		$entityManager = $this->getOpenEntityManagerMock();
+		$entityManager = $this->createMock(EntityManager::class);
+		$entityManager
+			->expects(self::any())
+			->method('isOpen')
+			->will(self::returnValue(true));
 
-		$logger = $this->getLoggerMock();
+		$logger = $this->createMock(LoggerInterface::class);
 
-		$sleeper = $this->getSleeperMock();
+		$sleeper = $this->createMock(Sleeper::class);
 		$sleeper
 			->expects(self::never())
 			->method(Assert::anything());
@@ -263,22 +275,26 @@ class ConsumerHandlerTest extends \PHPUnit\Framework\TestCase
 	{
 		$stopConsumerSleepSeconds = 2;
 
-		$dequeuer = $this->getDequeuerMock();
+		$dequeuer = $this->createMock(DequeuerInterface::class);
 		$dequeuer
 			->expects(self::never())
 			->method(Assert::anything());
 
-		$logger = $this->getLoggerMock();
+		$logger = $this->createMock(LoggerInterface::class);
 		$logger
 			->expects(self::never())
 			->method(Assert::anything());
 
-		$entityManager = $this->getOpenEntityManagerMock();
+		$entityManager = $this->createMock(EntityManager::class);
+		$entityManager
+			->expects(self::any())
+			->method('isOpen')
+			->will(self::returnValue(true));
 		$entityManager
 			->expects(self::once())
 			->method('clear');
 
-		$sleeper = $this->getSleeperMock();
+		$sleeper = $this->createMock(Sleeper::class);
 		$sleeper
 			->expects(self::never())
 			->method(Assert::anything());
@@ -303,22 +319,26 @@ class ConsumerHandlerTest extends \PHPUnit\Framework\TestCase
 	{
 		$stopConsumerSleepSeconds = 2;
 
-		$dequeuer = $this->getDequeuerMock();
+		$dequeuer = $this->createMock(DequeuerInterface::class);
 		$dequeuer
 			->expects(self::never())
 			->method(Assert::anything());
 
-		$logger = $this->getLoggerMock();
+		$logger = $this->createMock(LoggerInterface::class);
 		$logger
 			->expects(self::never())
 			->method(Assert::anything());
 
-		$entityManager = $this->getOpenEntityManagerMock();
+		$entityManager = $this->createMock(EntityManager::class);
+		$entityManager
+			->expects(self::any())
+			->method('isOpen')
+			->will(self::returnValue(true));
 		$entityManager
 			->expects(self::never())
 			->method('clear');
 
-		$sleeper = $this->getSleeperMock();
+		$sleeper = $this->createMock(Sleeper::class);
 		$sleeper
 			->expects(self::never())
 			->method(Assert::anything());
@@ -337,52 +357,6 @@ class ConsumerHandlerTest extends \PHPUnit\Framework\TestCase
 				return ConsumerInterface::MSG_ACK;
 			}
 		);
-	}
-
-	/**
-	 * @return \OldSound\RabbitMqBundle\RabbitMq\DequeuerInterface|\PHPUnit\Framework\MockObject\MockObject
-	 */
-	private function getDequeuerMock()
-	{
-		return $this->createMock(DequeuerInterface::class);
-	}
-
-	/**
-	 * @return \Psr\Log\LoggerInterface|\PHPUnit\Framework\MockObject\MockObject
-	 */
-	private function getLoggerMock()
-	{
-		return $this->createMock(LoggerInterface::class);
-	}
-
-	/**
-	 * @return \VasekPurchart\RabbitMqConsumerHandlerBundle\Sleeper\Sleeper|\PHPUnit\Framework\MockObject\MockObject
-	 */
-	private function getSleeperMock()
-	{
-		return $this->createMock(Sleeper::class);
-	}
-
-	/**
-	 * @return \Doctrine\ORM\EntityManager|\PHPUnit\Framework\MockObject\MockObject
-	 */
-	private function getEntityManagerMock()
-	{
-		return $this->createMock(EntityManager::class);
-	}
-
-	/**
-	 * @return \Doctrine\ORM\EntityManager|\PHPUnit\Framework\MockObject\MockObject
-	 */
-	private function getOpenEntityManagerMock()
-	{
-		$entityManager = $this->getEntityManagerMock();
-		$entityManager
-			->expects(self::any())
-			->method('isOpen')
-			->will(self::returnValue(true));
-
-		return $entityManager;
 	}
 
 }
