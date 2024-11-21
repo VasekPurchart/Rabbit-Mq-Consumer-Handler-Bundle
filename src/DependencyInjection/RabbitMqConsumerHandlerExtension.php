@@ -37,7 +37,7 @@ class RabbitMqConsumerHandlerExtension extends \Symfony\Component\HttpKernel\Dep
 		$this->loadEntityManager($mergedConfig, $container);
 		$this->loadConsumerSpecificConfiguration($mergedConfig, $container);
 
-		$yamlFileLoader->load('services.yml');
+		$yamlFileLoader->load('services.yaml');
 	}
 
 	/**
