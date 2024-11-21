@@ -24,7 +24,7 @@ class ConsumerHandlerCompilerPass extends \Consistence\ObjectPrototype implement
 
 	public function process(ContainerBuilder $container): void
 	{
-		$customConsumerConfigurations = $container->getParameter(RabbitMqConsumerHandlerExtension::CONTAINER_PARAMETER_CUSTOM_CONSUMER_CONFIGURATIONS);
+		$customConsumerConfigurations = $container->getParameter('vasek_purchart.rabbit_mq_consumer_handler.custom_consumer_configurations');
 
 		foreach ($container->findTaggedServiceIds(self::RABBIT_MQ_EXTENSION_CONSUMER_TAG) as $consumerServiceId => $attributes) {
 			$consumerName = $this->getConsumerName($consumerServiceId);
@@ -53,7 +53,7 @@ class ConsumerHandlerCompilerPass extends \Consistence\ObjectPrototype implement
 			Configuration::PARAMETER_STOP_CONSUMER_SLEEP_SECONDS
 		)
 			? $customConfiguration[Configuration::PARAMETER_STOP_CONSUMER_SLEEP_SECONDS]
-			: new Parameter(RabbitMqConsumerHandlerExtension::CONTAINER_PARAMETER_STOP_CONSUMER_SLEEP_SECONDS);
+			: new Parameter('vasek_purchart.rabbit_mq_consumer_handler.stop_consumer_sleep_seconds');
 
 		$logger = $customConfiguration !== null && ArrayType::containsKey(
 			$customConfiguration,
@@ -83,7 +83,7 @@ class ConsumerHandlerCompilerPass extends \Consistence\ObjectPrototype implement
 			Configuration::PARAMETER_ENTITY_MANAGER_CLEAR
 		)
 			? $customConfiguration[Configuration::SECTION_ENTITY_MANAGER][Configuration::PARAMETER_ENTITY_MANAGER_CLEAR]
-			: new Parameter(RabbitMqConsumerHandlerExtension::CONTAINER_PARAMETER_ENTITY_MANAGER_CLEAR);
+			: new Parameter('vasek_purchart.rabbit_mq_consumer_handler.entity_manager.clear');
 
 		$consumerHandlerServiceDefinition = new Definition(ConsumerHandler::class, [
 			'$stopConsumerSleepSeconds' => $stopConsumerSleepSeconds,

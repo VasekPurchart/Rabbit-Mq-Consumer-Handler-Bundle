@@ -27,13 +27,13 @@ class RabbitMqConsumerHandlerExtensionTest extends \Matthias\SymfonyDependencyIn
 	{
 		yield 'default stop_consumer_sleep_seconds value' => [
 			'configuration' => [],
-			'parameterName' => RabbitMqConsumerHandlerExtension::CONTAINER_PARAMETER_STOP_CONSUMER_SLEEP_SECONDS,
+			'parameterName' => 'vasek_purchart.rabbit_mq_consumer_handler.stop_consumer_sleep_seconds',
 			'expectedParameterValue' => 1,
 		];
 
 		yield 'default entity_manager.clear value' => [
 			'configuration' => [],
-			'parameterName' => RabbitMqConsumerHandlerExtension::CONTAINER_PARAMETER_ENTITY_MANAGER_CLEAR,
+			'parameterName' => 'vasek_purchart.rabbit_mq_consumer_handler.entity_manager.clear',
 			'expectedParameterValue' => true,
 		];
 
@@ -41,7 +41,7 @@ class RabbitMqConsumerHandlerExtensionTest extends \Matthias\SymfonyDependencyIn
 			'configuration' => [
 				'stop_consumer_sleep_seconds' => 2,
 			],
-			'parameterName' => RabbitMqConsumerHandlerExtension::CONTAINER_PARAMETER_STOP_CONSUMER_SLEEP_SECONDS,
+			'parameterName' => 'vasek_purchart.rabbit_mq_consumer_handler.stop_consumer_sleep_seconds',
 			'expectedParameterValue' => 2,
 		];
 
@@ -49,7 +49,7 @@ class RabbitMqConsumerHandlerExtensionTest extends \Matthias\SymfonyDependencyIn
 			'configuration' => [
 				'stop_consumer_sleep_seconds' => false,
 			],
-			'parameterName' => RabbitMqConsumerHandlerExtension::CONTAINER_PARAMETER_STOP_CONSUMER_SLEEP_SECONDS,
+			'parameterName' => 'vasek_purchart.rabbit_mq_consumer_handler.stop_consumer_sleep_seconds',
 			'expectedParameterValue' => 0,
 		];
 
@@ -59,7 +59,7 @@ class RabbitMqConsumerHandlerExtensionTest extends \Matthias\SymfonyDependencyIn
 					'clear_em_before_message' => false,
 				],
 			],
-			'parameterName' => RabbitMqConsumerHandlerExtension::CONTAINER_PARAMETER_ENTITY_MANAGER_CLEAR,
+			'parameterName' => 'vasek_purchart.rabbit_mq_consumer_handler.entity_manager.clear',
 			'expectedParameterValue' => false,
 		];
 	}
@@ -160,9 +160,9 @@ class RabbitMqConsumerHandlerExtensionTest extends \Matthias\SymfonyDependencyIn
 		]);
 
 		$this->assertContainerBuilderHasParameter(
-			RabbitMqConsumerHandlerExtension::CONTAINER_PARAMETER_CUSTOM_CONSUMER_CONFIGURATIONS
+			'vasek_purchart.rabbit_mq_consumer_handler.custom_consumer_configurations'
 		);
-		$customConsumerConfigurations = $this->container->getParameter(RabbitMqConsumerHandlerExtension::CONTAINER_PARAMETER_CUSTOM_CONSUMER_CONFIGURATIONS);
+		$customConsumerConfigurations = $this->container->getParameter('vasek_purchart.rabbit_mq_consumer_handler.custom_consumer_configurations');
 		Assert::assertArrayHasKey('my_consumer', $customConsumerConfigurations);
 
 		Assert::assertArrayHasKey('stop_consumer_sleep_seconds', $customConsumerConfigurations['my_consumer']);
