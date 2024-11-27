@@ -7,6 +7,7 @@ namespace VasekPurchart\RabbitMqConsumerHandlerBundle\DependencyInjection;
 use Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition;
 use Symfony\Component\Config\Definition\Builder\BooleanNodeDefinition;
 use Symfony\Component\Config\Definition\Builder\IntegerNodeDefinition;
+use Symfony\Component\Config\Definition\Builder\NodeDefinition;
 use Symfony\Component\Config\Definition\Builder\ScalarNodeDefinition;
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 
@@ -42,25 +43,30 @@ class Configuration extends \Consistence\ObjectPrototype implements \Symfony\Com
 		$treeBuilder = new TreeBuilder();
 		$rootNode = $treeBuilder->root($this->rootNode);
 
-		$this->addConsumerConfiguration($rootNode, true);
+		foreach ($this->createConsumerPrototype(true)->getChildNodeDefinitions() as $consumerChildNode) {
+			$rootNode->children()->append($consumerChildNode);
+		}
 
 		$rootNode->children()->append($this->createConsumersNode(self::SECTION_CONSUMERS));
 
 		return $treeBuilder;
 	}
 
-	private function addConsumerConfiguration(ArrayNodeDefinition $node, bool $addDefaults): void
+	private function createConsumerPrototype(bool $addDefaults): ArrayNodeDefinition
 	{
+		$node = new ArrayNodeDefinition(null);
 		$node->children()->append($this->createStopConsumerSleepSecondsNode(self::PARAMETER_STOP_CONSUMER_SLEEP_SECONDS, $addDefaults));
 		$node->children()->append($this->createLoggerNode(self::SECTION_LOGGER, $addDefaults));
 		$node->children()->append($this->createEntityManagerNode(self::SECTION_ENTITY_MANAGER, $addDefaults));
+
+		return $node;
 	}
 
 	private function createConsumersNode(string $nodeName): ArrayNodeDefinition
 	{
 		$node = new ArrayNodeDefinition($nodeName);
 		$node->useAttributeAsKey('name');
-		$this->addConsumerConfiguration($node->arrayPrototype(), false);
+		$this->setPrototype($node, $this->createConsumerPrototype(false));
 
 		return $node;
 	}
@@ -138,6 +144,20 @@ class Configuration extends \Consistence\ObjectPrototype implements \Symfony\Com
 		}
 
 		return $node;
+	}
+
+	private function setPrototype(ArrayNodeDefinition $node, NodeDefinition $prototype): void
+	{
+		$arrayNodeDefinition = new class (null) extends \Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition {
+
+			public function setPrototype(ArrayNodeDefinition $node, NodeDefinition $prototype): void
+			{
+				$node->prototype = $prototype;
+			}
+
+		};
+
+		$arrayNodeDefinition->setPrototype($node, $prototype);
 	}
 
 }
