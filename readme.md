@@ -201,7 +201,7 @@ Configuration
 Configuration structure with listed default values:
 
 ```yaml
-# config/packages/rabbit_mq_consumer_handler.yml
+# config/packages/rabbit_mq_consumer_handler.yaml
 rabbit_mq_consumer_handler:
     # Generally how long is needed for the program to run, to be considered started,
     # achieved by sleeping when stopping prematurely

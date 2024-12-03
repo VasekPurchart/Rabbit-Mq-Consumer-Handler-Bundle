@@ -94,7 +94,7 @@ class ConsumerHandlerCompilerPassTest extends \Matthias\SymfonyDependencyInjecti
 		)->getArgument('$stopConsumerSleepSeconds');
 		Assert::assertInstanceOf(Parameter::class, $stopConsumerSleepSeconds);
 		Assert::assertSame(
-			RabbitMqConsumerHandlerExtension::CONTAINER_PARAMETER_STOP_CONSUMER_SLEEP_SECONDS,
+			'vasek_purchart.rabbit_mq_consumer_handler.stop_consumer_sleep_seconds',
 			$stopConsumerSleepSeconds->__toString()
 		);
 		$this->assertContainerBuilderHasServiceDefinitionWithArgument(
@@ -168,7 +168,7 @@ class ConsumerHandlerCompilerPassTest extends \Matthias\SymfonyDependencyInjecti
 		)->getArgument('$clearEntityManager');
 		Assert::assertInstanceOf(Parameter::class, $clearEntityManager);
 		Assert::assertSame(
-			RabbitMqConsumerHandlerExtension::CONTAINER_PARAMETER_ENTITY_MANAGER_CLEAR,
+			'vasek_purchart.rabbit_mq_consumer_handler.entity_manager.clear',
 			$clearEntityManager->__toString()
 		);
 		$this->assertContainerBuilderHasServiceDefinitionWithArgument(
