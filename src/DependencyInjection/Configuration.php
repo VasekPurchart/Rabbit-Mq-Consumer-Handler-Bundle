@@ -40,8 +40,13 @@ class Configuration extends \Consistence\ObjectPrototype implements \Symfony\Com
 
 	public function getConfigTreeBuilder(): TreeBuilder
 	{
-		$treeBuilder = new TreeBuilder();
-		$rootNode = $treeBuilder->root($this->rootNode);
+		$treeBuilder = new TreeBuilder($this->rootNode);
+		if (method_exists($treeBuilder, 'getRootNode')) {
+			$rootNode = $treeBuilder->getRootNode();
+		} else {
+			// BC layer for symfony/config 4.1 and older
+			$rootNode = $treeBuilder->root($this->rootNode);
+		}
 
 		foreach ($this->createConsumerPrototype(true)->getChildNodeDefinitions() as $consumerChildNode) {
 			$rootNode->children()->append($consumerChildNode);
