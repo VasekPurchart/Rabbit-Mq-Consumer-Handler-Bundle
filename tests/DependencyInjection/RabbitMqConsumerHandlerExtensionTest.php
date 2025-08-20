@@ -6,19 +6,12 @@ namespace VasekPurchart\RabbitMqConsumerHandlerBundle\DependencyInjection;
 
 use Generator;
 use PHPUnit\Framework\Assert;
+use Symfony\Component\DependencyInjection\ContainerBuilder;
+use Symfony\Component\DependencyInjection\Extension\PrependExtensionInterface;
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
 
-class RabbitMqConsumerHandlerExtensionTest extends \Matthias\SymfonyDependencyInjectionTest\PhpUnit\AbstractExtensionTestCase
+class RabbitMqConsumerHandlerExtensionTest extends \PHPUnit\Framework\TestCase
 {
-
-	/**
-	 * @return \Symfony\Component\DependencyInjection\Extension\ExtensionInterface[]
-	 */
-	protected function getContainerExtensions(): array
-	{
-		return [
-			new RabbitMqConsumerHandlerExtension(),
-		];
-	}
 
 	/**
 	 * @return mixed[][]|\Generator
@@ -67,7 +60,7 @@ class RabbitMqConsumerHandlerExtensionTest extends \Matthias\SymfonyDependencyIn
 	/**
 	 * @dataProvider configureContainerParameterDataProvider
 	 *
-	 * @param mixed[][] $configuration
+	 * @param mixed[][]|array $configuration
 	 * @param string $parameterName
 	 * @param mixed $expectedParameterValue
 	 */
@@ -77,14 +70,15 @@ class RabbitMqConsumerHandlerExtensionTest extends \Matthias\SymfonyDependencyIn
 		$expectedParameterValue
 	): void
 	{
-		$this->load($configuration);
+		$container = self::createContainer();
+		$container->registerExtension(new RabbitMqConsumerHandlerExtension());
 
-		$this->assertContainerBuilderHasParameter(
-			$parameterName,
-			$expectedParameterValue
-		);
+		self::loadRegisteredExtensionsUsingCommonConfiguration($container, $configuration);
 
-		$this->compile();
+		self::assertContainerHasParameter($container, $parameterName);
+		Assert::assertSame($expectedParameterValue, $container->getParameter($parameterName));
+
+		$container->compile();
 	}
 
 	/**
@@ -128,7 +122,7 @@ class RabbitMqConsumerHandlerExtensionTest extends \Matthias\SymfonyDependencyIn
 	/**
 	 * @dataProvider configureContainerServiceAliasDataProvider
 	 *
-	 * @param mixed[][] $configuration
+	 * @param mixed[][]|array $configuration
 	 * @param string $aliasId
 	 * @param string $expectedServiceId
 	 */
@@ -138,37 +132,93 @@ class RabbitMqConsumerHandlerExtensionTest extends \Matthias\SymfonyDependencyIn
 		string $expectedServiceId
 	): void
 	{
-		$this->load($configuration);
+		$container = self::createContainer();
+		$container->registerExtension(new RabbitMqConsumerHandlerExtension());
 
-		$this->assertContainerBuilderHasAlias(
-			$aliasId,
-			$expectedServiceId
-		);
+		self::loadRegisteredExtensionsUsingCommonConfiguration($container, $configuration);
 
-		$this->compile();
+		self::assertContainerHasAlias($container, $aliasId);
+		Assert::assertSame($expectedServiceId, $container->getAlias($aliasId)->__toString());
+
+		$container->compile();
 	}
 
 	public function testConfigureStopConsumerSleepSecondsDifferentlyOnlyForOneConsumer(): void
 	{
+		$container = self::createContainer();
+		$container->registerExtension(new RabbitMqConsumerHandlerExtension());
+
 		$customConfiguration = [
 			'stop_consumer_sleep_seconds' => 3,
 		];
-		$this->load([
+		self::loadRegisteredExtensionsUsingCommonConfiguration($container, [
 			'consumers' => [
 				'my-consumer' => $customConfiguration,
 			],
 		]);
 
-		$this->assertContainerBuilderHasParameter(
-			'vasek_purchart.rabbit_mq_consumer_handler.custom_consumer_configurations'
-		);
-		$customConsumerConfigurations = $this->container->getParameter('vasek_purchart.rabbit_mq_consumer_handler.custom_consumer_configurations');
+		$parameterName = 'vasek_purchart.rabbit_mq_consumer_handler.custom_consumer_configurations';
+		self::assertContainerHasParameter($container, $parameterName);
+
+		$customConsumerConfigurations = $container->getParameter($parameterName);
 		Assert::assertArrayHasKey('my_consumer', $customConsumerConfigurations);
 
 		Assert::assertArrayHasKey('stop_consumer_sleep_seconds', $customConsumerConfigurations['my_consumer']);
 		Assert::assertSame(3, $customConsumerConfigurations['my_consumer']['stop_consumer_sleep_seconds']);
 
-		$this->compile();
+		$container->compile();
+	}
+
+	/**
+	 * @param \Symfony\Component\DependencyInjection\ContainerBuilder $container
+	 * @param mixed[][]|array $configuration
+	 */
+	private static function loadRegisteredExtensionsUsingCommonConfiguration(
+		ContainerBuilder $container,
+		array $configuration = []
+	): void
+	{
+		foreach ($container->getExtensions() as $extension) {
+			if ($extension instanceof PrependExtensionInterface) {
+				$extension->prepend($container);
+			}
+		}
+
+		foreach ($container->getExtensions() as $extension) {
+			$extension->load([$configuration], $container);
+		}
+	}
+
+	private static function createContainer(): ContainerBuilder
+	{
+		$container = new ContainerBuilder(new ParameterBag([]));
+		$container->getCompilerPassConfig()->setOptimizationPasses([]);
+		$container->getCompilerPassConfig()->setRemovingPasses([]);
+		$container->getCompilerPassConfig()->setAfterRemovingPasses([]);
+
+		return $container;
+	}
+
+	private static function assertContainerHasParameter(
+		ContainerBuilder $container,
+		string $parameterName
+	): void
+	{
+		Assert::assertTrue(
+			$container->hasParameter($parameterName),
+			sprintf('Expecting the container to have parameter `%s`.', $parameterName)
+		);
+	}
+
+	private static function assertContainerHasAlias(
+		ContainerBuilder $container,
+		string $aliasId
+	): void
+	{
+		Assert::assertTrue(
+			$container->hasAlias($aliasId),
+			sprintf('Expecting the container to have alias `%s`.', $aliasId)
+		);
 	}
 
 }

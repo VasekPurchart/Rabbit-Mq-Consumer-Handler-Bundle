@@ -9,44 +9,31 @@ use PHPUnit\Framework\Assert;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\Parameter;
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
 use Symfony\Component\DependencyInjection\Reference;
 use VasekPurchart\RabbitMqConsumerHandlerBundle\ConsumerHandler\ConsumerHandler;
 
-class ConsumerHandlerCompilerPassTest extends \Matthias\SymfonyDependencyInjectionTest\PhpUnit\AbstractCompilerPassTestCase
+class ConsumerHandlerCompilerPassTest extends \PHPUnit\Framework\TestCase
 {
-
-	protected function registerCompilerPass(ContainerBuilder $container): void
-	{
-		$container->addCompilerPass(new ConsumerHandlerCompilerPass());
-	}
-
-	protected function setUp(): void
-	{
-		parent::setUp();
-
-		$this->container->registerExtension(new RabbitMqConsumerHandlerExtension());
-		$this->container->loadFromExtension('rabbit_mq_consumer_handler');
-	}
 
 	public function testWrapProducersWithDatabaseTransactionProducer(): void
 	{
+		$container = self::createContainer();
+		$container->addCompilerPass(new ConsumerHandlerCompilerPass());
+		$container->registerExtension(new RabbitMqConsumerHandlerExtension());
+		$container->loadFromExtension('rabbit_mq_consumer_handler');
+
 		$consumerServiceId = 'old_sound_rabbit_mq.my_consumer_name_consumer';
-		$this->registerConsumer($consumerServiceId);
+		$this->registerConsumer($container, $consumerServiceId);
 
-		$this->compile();
+		$container->compile();
 
-		$this->assertContainerBuilderHasService(
-			'vasek_purchart.rabbit_mq_consumer_handler.consumer_handler.id.my_consumer_name',
-			ConsumerHandler::class
-		);
+		$consumerHandlerName = 'vasek_purchart.rabbit_mq_consumer_handler.consumer_handler.id.my_consumer_name';
+		self::assertContainerHasService($container, $consumerHandlerName);
+		self::assertContainerServiceIsOfType($container, $consumerHandlerName, ConsumerHandler::class);
 
-		$this->assertContainerBuilderHasServiceDefinitionWithArgument(
-			'vasek_purchart.rabbit_mq_consumer_handler.consumer_handler.id.my_consumer_name',
-			'$dequeuer'
-		);
-		$dequeuerArgument = $this->container->findDefinition(
-			'vasek_purchart.rabbit_mq_consumer_handler.consumer_handler.id.my_consumer_name'
-		)->getArgument('$dequeuer');
+		$consumerHandlerDefinition = $container->findDefinition($consumerHandlerName);
+		$dequeuerArgument = $consumerHandlerDefinition->getArgument('$dequeuer');
 		Assert::assertInstanceOf(Reference::class, $dequeuerArgument);
 		Assert::assertSame(
 			$consumerServiceId,
@@ -56,7 +43,11 @@ class ConsumerHandlerCompilerPassTest extends \Matthias\SymfonyDependencyInjecti
 
 	public function testConsumerConfiguration(): void
 	{
-		$this->container->loadFromExtension('rabbit_mq_consumer_handler', [
+		$container = self::createContainer();
+		$container->addCompilerPass(new ConsumerHandlerCompilerPass());
+		$container->registerExtension(new RabbitMqConsumerHandlerExtension());
+
+		$container->loadFromExtension('rabbit_mq_consumer_handler', [
 			'consumers' => [
 				'custom-configuration' => [
 					'stop_consumer_sleep_seconds' => 3,
@@ -71,113 +62,72 @@ class ConsumerHandlerCompilerPassTest extends \Matthias\SymfonyDependencyInjecti
 			],
 		]);
 
-		$this->registerConsumer('old_sound_rabbit_mq.default_configuration_consumer');
-		$this->registerConsumer('old_sound_rabbit_mq.custom_configuration_consumer');
+		$this->registerConsumer($container, 'old_sound_rabbit_mq.default_configuration_consumer');
+		$this->registerConsumer($container, 'old_sound_rabbit_mq.custom_configuration_consumer');
 
-		$this->compile();
+		$container->compile();
 
-		$this->assertContainerBuilderHasService(
-			'vasek_purchart.rabbit_mq_consumer_handler.consumer_handler.id.default_configuration',
-			ConsumerHandler::class
-		);
-		$this->assertContainerBuilderHasService(
-			'vasek_purchart.rabbit_mq_consumer_handler.consumer_handler.id.custom_configuration',
-			ConsumerHandler::class
-		);
+		$defaultConfigurationId = 'vasek_purchart.rabbit_mq_consumer_handler.consumer_handler.id.default_configuration';
+		$customConfigurationId = 'vasek_purchart.rabbit_mq_consumer_handler.consumer_handler.id.custom_configuration';
 
-		$this->assertContainerBuilderHasServiceDefinitionWithArgument(
-			'vasek_purchart.rabbit_mq_consumer_handler.consumer_handler.id.default_configuration',
-			'$stopConsumerSleepSeconds'
-		);
-		$stopConsumerSleepSeconds = $this->container->findDefinition(
-			'vasek_purchart.rabbit_mq_consumer_handler.consumer_handler.id.default_configuration'
-		)->getArgument('$stopConsumerSleepSeconds');
+		self::assertContainerHasService($container, $defaultConfigurationId);
+		self::assertContainerServiceIsOfType($container, $defaultConfigurationId, ConsumerHandler::class);
+
+		self::assertContainerHasService($container, $customConfigurationId);
+		self::assertContainerServiceIsOfType($container, $customConfigurationId, ConsumerHandler::class);
+
+		$defaultConfigurationDefinition = $container->findDefinition($defaultConfigurationId);
+		$customConfigurationDefinition = $container->findDefinition($customConfigurationId);
+
+		$stopConsumerSleepSeconds = $defaultConfigurationDefinition->getArgument('$stopConsumerSleepSeconds');
 		Assert::assertInstanceOf(Parameter::class, $stopConsumerSleepSeconds);
 		Assert::assertSame(
 			'vasek_purchart.rabbit_mq_consumer_handler.stop_consumer_sleep_seconds',
 			$stopConsumerSleepSeconds->__toString()
 		);
-		$this->assertContainerBuilderHasServiceDefinitionWithArgument(
-			'vasek_purchart.rabbit_mq_consumer_handler.consumer_handler.id.custom_configuration',
-			'$stopConsumerSleepSeconds'
-		);
-		$stopConsumerSleepSeconds = $this->container->findDefinition(
-			'vasek_purchart.rabbit_mq_consumer_handler.consumer_handler.id.custom_configuration'
-		)->getArgument('$stopConsumerSleepSeconds');
+
+		$stopConsumerSleepSeconds = $customConfigurationDefinition->getArgument('$stopConsumerSleepSeconds');
 		Assert::assertSame(
 			3,
 			$stopConsumerSleepSeconds
 		);
 
-		$this->assertContainerBuilderHasServiceDefinitionWithArgument(
-			'vasek_purchart.rabbit_mq_consumer_handler.consumer_handler.id.default_configuration',
-			'$logger'
-		);
-		$logger = $this->container->findDefinition(
-			'vasek_purchart.rabbit_mq_consumer_handler.consumer_handler.id.default_configuration'
-		)->getArgument('$logger');
+		$logger = $defaultConfigurationDefinition->getArgument('$logger');
 		Assert::assertInstanceOf(Reference::class, $logger);
 		Assert::assertSame(
 			RabbitMqConsumerHandlerExtension::CONTAINER_SERVICE_LOGGER,
 			$logger->__toString()
 		);
-		$this->assertContainerBuilderHasServiceDefinitionWithArgument(
-			'vasek_purchart.rabbit_mq_consumer_handler.consumer_handler.id.custom_configuration',
-			'$logger'
-		);
-		$logger = $this->container->findDefinition(
-			'vasek_purchart.rabbit_mq_consumer_handler.consumer_handler.id.custom_configuration'
-		)->getArgument('$logger');
+
+		$logger = $customConfigurationDefinition->getArgument('$logger');
 		Assert::assertInstanceOf(Reference::class, $logger);
 		Assert::assertSame(
 			'my_custom_logger',
 			$logger->__toString()
 		);
 
-		$this->assertContainerBuilderHasServiceDefinitionWithArgument(
-			'vasek_purchart.rabbit_mq_consumer_handler.consumer_handler.id.default_configuration',
-			'$entityManager'
-		);
-		$entityManager = $this->container->findDefinition(
-			'vasek_purchart.rabbit_mq_consumer_handler.consumer_handler.id.default_configuration'
-		)->getArgument('$entityManager');
+		$entityManager = $defaultConfigurationDefinition->getArgument('$entityManager');
 		Assert::assertInstanceOf(Reference::class, $entityManager);
 		Assert::assertSame(
 			RabbitMqConsumerHandlerExtension::CONTAINER_SERVICE_ENTITY_MANAGER,
 			$entityManager->__toString()
 		);
-		$this->assertContainerBuilderHasServiceDefinitionWithArgument(
-			'vasek_purchart.rabbit_mq_consumer_handler.consumer_handler.id.custom_configuration',
-			'$entityManager'
-		);
-		$entityManager = $this->container->findDefinition(
-			'vasek_purchart.rabbit_mq_consumer_handler.consumer_handler.id.custom_configuration'
-		)->getArgument('$entityManager');
+
+		$entityManager = $customConfigurationDefinition->getArgument('$entityManager');
 		Assert::assertInstanceOf(Reference::class, $entityManager);
 		Assert::assertSame(
 			'my_custom_entity_manager',
 			$entityManager->__toString()
 		);
 
-		$this->assertContainerBuilderHasServiceDefinitionWithArgument(
-			'vasek_purchart.rabbit_mq_consumer_handler.consumer_handler.id.default_configuration',
-			'$clearEntityManager'
-		);
-		$clearEntityManager = $this->container->findDefinition(
-			'vasek_purchart.rabbit_mq_consumer_handler.consumer_handler.id.default_configuration'
-		)->getArgument('$clearEntityManager');
+		$clearEntityManager = $defaultConfigurationDefinition->getArgument('$clearEntityManager');
 		Assert::assertInstanceOf(Parameter::class, $clearEntityManager);
 		Assert::assertSame(
 			'vasek_purchart.rabbit_mq_consumer_handler.entity_manager.clear',
 			$clearEntityManager->__toString()
 		);
-		$this->assertContainerBuilderHasServiceDefinitionWithArgument(
-			'vasek_purchart.rabbit_mq_consumer_handler.consumer_handler.id.custom_configuration',
-			'$clearEntityManager'
-		);
-		$clearEntityManager = $this->container->findDefinition(
-			'vasek_purchart.rabbit_mq_consumer_handler.consumer_handler.id.custom_configuration'
-		)->getArgument('$clearEntityManager');
+
+		$clearEntityManager = $customConfigurationDefinition->getArgument('$clearEntityManager');
 		Assert::assertSame(
 			false,
 			$clearEntityManager
@@ -186,7 +136,11 @@ class ConsumerHandlerCompilerPassTest extends \Matthias\SymfonyDependencyInjecti
 
 	public function testDetectUnusedConsumerConfiguration(): void
 	{
-		$this->container->loadFromExtension('rabbit_mq_consumer_handler', [
+		$container = self::createContainer();
+		$container->addCompilerPass(new ConsumerHandlerCompilerPass());
+		$container->registerExtension(new RabbitMqConsumerHandlerExtension());
+
+		$container->loadFromExtension('rabbit_mq_consumer_handler', [
 			'consumers' => [
 				'my-consumer-xxx' => [
 					'stop_consumer_sleep_seconds' => 3,
@@ -194,10 +148,10 @@ class ConsumerHandlerCompilerPassTest extends \Matthias\SymfonyDependencyInjecti
 			],
 		]);
 
-		$this->registerConsumer('old_sound_rabbit_mq.my_consumer_consumer');
+		$this->registerConsumer($container, 'old_sound_rabbit_mq.my_consumer_consumer');
 
 		try {
-			$this->compile();
+			$container->compile();
 
 			Assert::fail('Exception expected');
 
@@ -206,11 +160,47 @@ class ConsumerHandlerCompilerPassTest extends \Matthias\SymfonyDependencyInjecti
 		}
 	}
 
-	private function registerConsumer(string $consumerServiceId): void
+	private function registerConsumer(ContainerBuilder $container, string $consumerServiceId): void
 	{
 		$consumerDefinition = new Definition(Consumer::class);
 		$consumerDefinition->addTag(ConsumerHandlerCompilerPass::RABBIT_MQ_EXTENSION_CONSUMER_TAG);
-		$this->setDefinition($consumerServiceId, $consumerDefinition);
+		$container->setDefinition($consumerServiceId, $consumerDefinition);
+	}
+
+	private static function createContainer(): ContainerBuilder
+	{
+		$container = new ContainerBuilder(new ParameterBag([]));
+		$container->getCompilerPassConfig()->setOptimizationPasses([]);
+		$container->getCompilerPassConfig()->setRemovingPasses([]);
+		$container->getCompilerPassConfig()->setAfterRemovingPasses([]);
+
+		return $container;
+	}
+
+	private static function assertContainerHasService(
+		ContainerBuilder $container,
+		string $serviceId
+	): void
+	{
+		Assert::assertTrue(
+			$container->has($serviceId),
+			sprintf('Expecting the container to have service `%s`.', $serviceId)
+		);
+	}
+
+	private static function assertContainerServiceIsOfType(
+		ContainerBuilder $container,
+		string $serviceId,
+		string $expectedClassString
+	): void
+	{
+		$serviceDefinition = $container->findDefinition($serviceId);
+
+		Assert::assertSame(
+			$expectedClassString,
+			$container->getParameterBag()->resolveValue($serviceDefinition->getClass()),
+			sprintf('Expecting the service `%s` to be of type `%s`.', $serviceId, $expectedClassString)
+		);
 	}
 
 }
